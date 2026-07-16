@@ -1,0 +1,374 @@
+{% extends "base_technician_dashboard .html" %}
+
+
+{% block title %}
+Technician Dashboard
+{% endblock %}
+
+{% block content %}
+
+<!-- ======================= -->
+<!-- Welcome -->
+<!-- ======================= -->
+
+<div class="welcome-section">
+
+    <div>
+        <h2>Welcome back, {{ request.user.first_name|default:request.user.username }}</h2>
+
+        <p>
+            Manage tickets, monitor your workload and respond quickly to users.
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ======================= -->
+<!-- Statistics -->
+<!-- ======================= -->
+
+<div class="stat-grid">
+
+    <div class="glass-card stat-card">
+
+        <div class="stat-top">
+
+            <span>Assigned To Me</span>
+
+            <div class="stat-icon bg-primary">
+
+                <i class="bi bi-person-workspace"></i>
+
+            </div>
+
+        </div>
+
+        <h2>{{ assigned_count }}</h2>
+
+    </div>
+
+
+    <div class="glass-card stat-card">
+
+        <div class="stat-top">
+
+            <span>Open</span>
+
+            <div class="stat-icon bg-warning">
+
+                <i class="bi bi-folder2-open"></i>
+
+            </div>
+
+        </div>
+
+        <h2>{{ open_count }}</h2>
+
+    </div>
+
+
+    <div class="glass-card stat-card">
+
+        <div class="stat-top">
+
+            <span>In Progress</span>
+
+            <div class="stat-icon bg-info">
+
+                <i class="bi bi-tools"></i>
+
+            </div>
+
+        </div>
+
+        <h2>{{ progress_count }}</h2>
+
+    </div>
+
+
+    <div class="glass-card stat-card">
+
+        <div class="stat-top">
+
+            <span>Resolved</span>
+
+            <div class="stat-icon bg-success">
+
+                <i class="bi bi-check-circle"></i>
+
+            </div>
+
+        </div>
+
+        <h2>{{ resolved_count }}</h2>
+
+    </div>
+
+</div>
+
+<!-- ======================= -->
+<!-- Quick Actions -->
+<!-- ======================= -->
+
+<div class="quick-links-grid">
+
+    <a href="{% url 'my_queue' %}" class="glass-card quick-link-card">
+
+        <i class="bi bi-list-task fs-2"></i>
+
+        <strong>My Queue</strong>
+
+        <span>View assigned tickets</span>
+
+    </a>
+
+    <a href="{% url 'unassigned_queue' %}" class="glass-card quick-link-card">
+
+        <i class="bi bi-inboxes fs-2"></i>
+
+        <strong>Unassigned</strong>
+
+        <span>{{ unassigned_count }} waiting</span>
+
+    </a>
+
+    <a href="{% url 'all_tickets' %}" class="glass-card quick-link-card">
+
+        <i class="bi bi-ticket-detailed fs-2"></i>
+
+        <strong>All Tickets</strong>
+
+        <span>Browse all tickets</span>
+
+    </a>
+
+    <a href="#" class="glass-card quick-link-card">
+
+        <i class="bi bi-search fs-2"></i>
+
+        <strong>Search</strong>
+
+        <span>Find any ticket</span>
+
+    </a>
+
+</div>
+
+<!-- ======================= -->
+<!-- Two Column Layout -->
+<!-- ======================= -->
+
+<div class="grid-2col">
+
+<!-- LEFT -->
+
+<div>
+
+<div class="glass-card panel">
+
+<h3>
+
+My Queue
+
+<a href="{% url 'my_queue' %}">
+
+View All
+
+</a>
+
+</h3>
+
+{% for ticket in my_queue %}
+
+<div class="activity-item">
+
+<div class="activity-dot"></div>
+
+<div>
+
+<strong>
+
+#{{ ticket.id }}
+
+{{ ticket.title }}
+
+</strong>
+
+<br>
+
+<small>
+
+{{ ticket.created_by }}
+
+•
+
+{{ ticket.created_at|timesince }} ago
+
+</small>
+
+</div>
+
+<span class="status-badge">
+
+{{ ticket.status }}
+
+</span>
+
+</div>
+
+{% empty %}
+
+<p>No assigned tickets.</p>
+
+{% endfor %}
+
+</div>
+
+<br>
+
+<div class="glass-card panel">
+
+<h3>Urgent Tickets</h3>
+
+{% for ticket in urgent_tickets %}
+
+<div class="activity-item">
+
+<div class="activity-dot bg-danger"></div>
+
+<div>
+
+<strong>
+
+{{ ticket.title }}
+
+</strong>
+
+<br>
+
+<small>
+
+Priority:
+
+{{ ticket.priority }}
+
+</small>
+
+</div>
+
+<a href="{% url 'technician_ticket_detail' ticket.id %}"
+
+class="btn btn-sm btn-warning">
+
+Open
+
+</a>
+
+</div>
+
+{% empty %}
+
+<p>No urgent tickets.</p>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<!-- RIGHT -->
+
+<div>
+
+<div class="glass-card panel">
+
+<h3>
+
+Recent Activity
+
+</h3>
+
+{% for ticket in recent_activity %}
+
+<div class="activity-item">
+
+<div class="activity-dot bg-success"></div>
+
+<div>
+
+<strong>
+
+#{{ ticket.id }}
+
+{{ ticket.title }}
+
+</strong>
+
+<br>
+
+<small>
+
+Updated
+
+{{ ticket.updated_at|timesince }}
+
+ago
+
+</small>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<br>
+
+<div class="glass-card panel">
+
+<h3>
+
+Announcements
+
+</h3>
+
+{% for note in announcements %}
+
+<div class="activity-item">
+
+<div class="activity-dot bg-primary"></div>
+
+<div>
+
+<strong>
+
+{{ note.title }}
+
+</strong>
+
+<p>
+
+{{ note.message }}
+
+</p>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<p>No announcements.</p>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

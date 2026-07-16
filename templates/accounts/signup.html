@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+
+<div class="auth-container">
+    <div class="card auth-card">
+        <div class="card-body p-5">
+
+            <!-- Company Image -->
+            <div class="text-center mb-4">
+                <img src="{% static 'images/NKMBV-37.png' %}"
+                     class="signup-logo"
+                     alt="NKMB Logo">
+            </div>
+
+            <h2 class="text-center fw-bold">Create Account</h2>
+
+            <p class="text-center text-muted mb-4">
+                Register as an Employee
+            </p>
+
+            <form method="POST" action="{% url 'signup' %}" novalidate>
+                 {% csrf_token %}
+                <!-- First Name -->
+                <div class="mb-3">
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="text-danger small">
+                            {{ form.first_name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Last Name -->
+                <div class="mb-3">
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="text-danger small">
+                            {{ form.last_name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Username -->
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    {{ form.username }}
+
+                    <small class="form-text text-muted help-text">
+                        {{ form.username.help_text }}
+                    </small>
+
+                    {% if form.username.errors %}
+                        <div class="text-danger small">
+                            {{ form.username.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label">Company Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="text-danger small">
+                            {{ form.email.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Employee Number -->
+                <div class="mb-3">
+                    <label class="form-label">Employee Number</label>
+                    {{ form.employee_number }}
+                    {% if form.employee_number.errors %}
+                        <div class="text-danger small">
+                            {{ form.employee_number.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    {{ form.password1 }}
+
+                    <small class="form-text text-muted help-text">
+                        {{ form.password1.help_text }}
+                    </small>
+
+                    {% if form.password1.errors %}
+                        <div class="text-danger small">
+                            {{ form.password1.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-4">
+                    <label class="form-label">Confirm Password</label>
+                    {{ form.password2 }}
+
+                    {% if form.password2.errors %}
+                        <div class="text-danger small">
+                            {{ form.password2.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-person-check-fill"></i>
+                    Create Account
+                </button>
+
+            </form>
+
+            <div class="text-center mt-4">
+                Already have an account?
+                <a href="{% url 'login' %}" class="fw-bold text-decoration-none">
+                    Login
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

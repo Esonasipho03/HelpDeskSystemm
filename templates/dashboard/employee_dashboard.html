@@ -1,0 +1,223 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}
+Employee Dashboard
+{% endblock %}
+
+{% block content %}
+
+<!-- Welcome -->
+<div class="welcome-section">
+
+    <div>
+        <h1>
+            {{ request.user.username }}
+            👋
+        </h1>
+        <p>
+            Welcome back to the NKMB Help Desk System.
+        </p>
+    </div>
+
+    <a href="{% url 'create_ticket' %}" class="glass-button">
+        <i class="bi bi-plus-circle"></i>
+        Create Ticket
+    </a>
+
+</div>
+
+<!-- Knowledge base search -->
+<div class="glass-card kb-search-panel">
+
+    <h3>Find an answer before you file a ticket</h3>
+    <p>Search the knowledge base for common fixes and guides.</p>
+
+    <form action="{% url 'knowledge_base' %}" method="get" class="kb-search-bar">
+
+        <i class="bi bi-search"></i>
+
+        <input
+            type="text"
+            name="q"
+            placeholder="Search for solutions..."
+        >
+
+    </form>
+
+    <div class="kb-tags">
+
+        <a href="{% url 'knowledge_base' %}?q=Printer" class="kb-tag">
+            <i class="bi bi-printer-fill"></i>
+            Printer Issues
+        </a>
+
+        <a href="{% url 'knowledge_base' %}?q=Audio" class="kb-tag">
+            <i class="bi bi-volume-up-fill"></i>
+            Audio Problems
+        </a>
+
+        <a href="{% url 'knowledge_base' %}?q=Slack" class="kb-tag">
+            <i class="bi bi-slack"></i>
+            Slack Support
+        </a>
+
+        <a href="{% url 'knowledge_base' %}?q=Scanner" class="kb-tag">
+            <i class="bi bi-upc-scan"></i>
+            Scanner Setup
+        </a>
+
+        <a href="{% url 'knowledge_base' %}?q=Outlook Password" class="kb-tag">
+            <i class="bi bi-envelope-lock-fill"></i>
+            Outlook Password
+        </a>
+
+    </div>
+
+</div>
+
+<!-- Quick links: pre-filled ticket templates -->
+<h3 class="section-label">Common requests</h3>
+
+<div class="quick-links-grid">
+
+    <a href="{% url 'create_ticket' %}?category=Printing" class="glass-card quick-link-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#f17807,#ff9a3c);">
+            <i class="bi bi-printer-fill"></i>
+        </div>
+        <strong>Printer Problems</strong>
+        <span>Printer offline, paper jam or cannot print</span>
+    </a>
+
+    <a href="{% url 'create_ticket' %}?category=Audio" class="glass-card quick-link-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#4d8dff,#8ec5ff);">
+            <i class="bi bi-volume-up-fill"></i>
+        </div>
+        <strong>Audio Problems</strong>
+        <span>No sound or headset not working</span>
+    </a>
+
+    <a href="{% url 'create_ticket' %}?category=Outlook Password" class="glass-card quick-link-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#34c98a,#8ff0c0);">
+            <i class="bi bi-envelope-lock-fill"></i>
+        </div>
+        <strong>Outlook Password</strong>
+        <span>Reset or unlock Outlook account</span>
+    </a>
+
+    <a href="{% url 'create_ticket' %}?category=Scanning" class="glass-card quick-link-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#ff6fb1,#ffb2d9);">
+            <i class="bi bi-upc-scan"></i>
+        </div>
+        <strong>Scanner Problems</strong>
+        <span>Scanner not detected or not scanning</span>
+    </a>
+
+</div>
+
+<!-- My ticket stats -->
+<div class="stat-grid">
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>My Open Tickets</span>
+            <div class="stat-icon" style="background:linear-gradient(135deg,#f17807,#ff9a3c);">
+                <i class="bi bi-ticket-detailed-fill"></i>
+            </div>
+        </div>
+        <h2>{{ open_tickets_count }}</h2>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Pending My Reply</span>
+            <div class="stat-icon" style="background:linear-gradient(135deg,#f0b429,#ffd873);">
+                <i class="bi bi-chat-dots-fill"></i>
+            </div>
+        </div>
+        <h2>{{ pending_reply_count }}</h2>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Resolved This Month</span>
+            <div class="stat-icon" style="background:linear-gradient(135deg,#34c98a,#8ff0c0);">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+        <h2>{{ resolved_tickets_count }}</h2>
+    </div>
+
+</div>
+
+<!-- Two column area -->
+<div class="grid-2col">
+
+    <div>
+
+        <div class="glass-card panel">
+            <h3>
+                My Tickets
+                <a href="{% url 'ticket_history' %}">View All</a>
+            </h3>
+
+            {% for ticket in recent_tickets %}
+            <a href="{% url 'ticket_detail' ticket.pk %}" class="ticket-row-link">
+                <div class="activity-item">
+                    <div class="activity-dot" style="background:#f17807;"></div>
+                    <div>
+                        <p><strong>{{ ticket.title }}</strong></p>
+                        <small>Updated {{ ticket.updated_at|timesince }} ago</small>
+                        {% if ticket.status == "Open" or ticket.status == "Assigned" or ticket.status == "In Progress" or ticket.status == "Pending" %}
+                        <div class="response-note">Priority: {{ ticket.priority }}</div>
+                        {% endif %}
+                    </div>
+                    <span class="status-badge {{ ticket.status|lower|slugify }}">{{ ticket.status }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                You haven't logged any tickets yet.
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Satisfaction survey: only shown when a resolved ticket is unrated -->
+        {% if ticket_to_rate %}
+        <div class="glass-card survey-card">
+            <div class="ticket-ref">Ticket #{{ ticket_to_rate.id }} — {{ ticket_to_rate.title }}</div>
+            <p>How was your support experience?</p>
+            <a href="{% url 'rate_ticket' ticket_to_rate.pk %}" class="glass-button">
+                <i class="bi bi-star-fill"></i>
+                Rate this ticket
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+
+
+        <div class="glass-card panel">
+            <h3>Announcements</h3>
+            {% for note in announcements %}
+            <div class="activity-item">
+                <div class="activity-dot" style="background:#4d8dff;"></div>
+                <div>
+                    <p><strong>{{ note.title }}</strong></p>
+                    <p>{{ note.message }}</p>
+                    <small>{{ note.created_at|timesince }} ago</small>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-megaphone"></i>
+                No announcements right now.
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
