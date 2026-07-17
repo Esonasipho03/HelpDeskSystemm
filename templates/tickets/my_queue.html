@@ -1,0 +1,66 @@
+{% extends 'base_technician_dashboard .html' %}
+
+{% block title %}
+My Queue
+{% endblock %}
+
+{% block nav_my_queue %}active{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h1>My Queue</h1>
+        <p>Every ticket currently assigned to you, most urgent first.</p>
+    </div>
+    <a href="{% url 'unassigned_queue' %}" class="glass-button glass-button-ghost">
+        <i class="bi bi-inbox-fill"></i>
+        Unassigned Queue
+    </a>
+</div>
+
+<div class="filter-tabs">
+    <a href="{% url 'my_queue' %}" class="filter-tab {% if not status_filter %}active{% endif %}">All</a>
+    {% for value, label in status_choices %}
+    <a href="?status={{ value }}" class="filter-tab {% if status_filter == value %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="glass-card panel">
+
+    {% for ticket in tickets %}
+    <div class="queue-row">
+        <div class="queue-main">
+            <a href="{% url 'ticket_detail' ticket.pk %}">{{ ticket.title }}</a>
+            <div class="queue-meta">
+                #{{ ticket.pk }} · {{ ticket.created_by.first_name }} {{ ticket.created_by.last_name }}
+                · opened {{ ticket.created_at|timesince }} ago
+                · updated {{ ticket.updated_at|timesince }} ago
+            </div>
+        </div>
+        <span class="priority-badge {{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+        <span class="status-badge {{ ticket.status }}">{{ ticket.get_status_display }}</span>
+        <div class="queue-actions">
+            <form method="post" action="{% url 'update_ticket_status' ticket.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'my_queue' %}{% if status_filter %}?status={{ status_filter }}{% endif %}">
+                <select name="status" class="status-select" onchange="this.form.submit()">
+                    <option value="open" {% if ticket.status == "open" %}selected{% endif %}>Open</option>
+                    <option value="pending" {% if ticket.status == "pending" %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if ticket.status == "in_progress" %}selected{% endif %}>In Progress</option>
+                    <option value="resolved" {% if ticket.status == "resolved" %}selected{% endif %}>Resolved</option>
+                    <option value="closed" {% if ticket.status == "closed" %}selected{% endif %}>Closed</option>
+                </select>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="bi bi-emoji-sunglasses"></i>
+        {% if status_filter %}No tickets with this status.{% else %}Nothing assigned to you right now.{% endif %}
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

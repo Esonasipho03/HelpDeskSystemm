@@ -1,0 +1,52 @@
+{% extends 'base_technician_dashboard .html' %}
+
+{% block title %}
+Unassigned Queue
+{% endblock %}
+
+{% block nav_unassigned %}active{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h1>Unassigned Queue</h1>
+        <p>Tickets nobody has claimed yet, sorted by urgency.</p>
+    </div>
+    <a href="{% url 'my_queue' %}" class="glass-button glass-button-ghost">
+        <i class="bi bi-person-workspace"></i>
+        My Queue
+    </a>
+</div>
+
+<div class="glass-card panel">
+
+    {% for ticket in tickets %}
+    <div class="queue-row">
+        <div class="queue-main">
+            <a href="{% url 'ticket_detail' ticket.pk %}">{{ ticket.title }}</a>
+            <div class="queue-meta">
+                #{{ ticket.pk }} · {{ ticket.created_by.first_name }} {{ ticket.created_by.last_name }}
+                · {{ ticket.get_category_display }}
+                · opened {{ ticket.created_at|timesince }} ago
+            </div>
+        </div>
+        <span class="priority-badge {{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+        <div class="queue-actions">
+            <form method="post" action="{% url 'claim_ticket' ticket.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'unassigned_queue' %}">
+                <button type="submit" class="claim-btn">Claim</button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="bi bi-check2-circle"></i>
+        Queue is clear. Nothing waiting on assignment.
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

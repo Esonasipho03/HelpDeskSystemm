@@ -1,0 +1,290 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}
+Ticket Details
+{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+
+    <div>
+        <h1>Ticket #{{ ticket.id }}</h1>
+        <p>{{ ticket.title }}</p>
+    </div>
+<p>
+    <strong>Assigned Technician:</strong>
+
+    {% if ticket.assigned_to %}
+        {{ ticket.assigned_to.get_full_name }}
+    {% else %}
+        Awaiting Assignment
+    {% endif %}
+</p>
+    <a href="{% url 'ticket_history' %}" class="glass-button">
+        <i class="bi bi-arrow-left"></i>
+        Back to History
+    </a>
+
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+
+    <div class="col-lg-8">
+
+        <div class="glass-card mb-4">
+
+            <h4 class="mb-4">
+                <i class="bi bi-ticket-detailed-fill"></i>
+                Ticket Information
+            </h4>
+
+            <table class="table">
+
+                <tr>
+                    <th width="220">Issue</th>
+                    <td>{{ ticket.title }}</td>
+                </tr>
+
+                <tr>
+                    <th>Category</th>
+                    <td>{{ ticket.category }}</td>
+                </tr>
+
+                <tr>
+                    <th>Department</th>
+                    <td>{{ ticket.department }}</td>
+                </tr>
+
+                
+
+                
+
+                
+
+                <tr>
+                    <th>Priority</th>
+                    <td>{{ ticket.priority }}</td>
+                </tr>
+
+                <tr>
+                    <th>Status</th>
+                    <td>
+
+                        {% if ticket.status == "Open" %}
+                            <span class="badge bg-danger">{{ ticket.status }}</span>
+
+                        {% elif ticket.status == "Assigned" %}
+                            <span class="badge bg-primary">{{ ticket.status }}</span>
+
+                        {% elif ticket.status == "In Progress" %}
+                            <span class="badge bg-warning text-dark">{{ ticket.status }}</span>
+
+                        {% elif ticket.status == "Resolved" %}
+                            <span class="badge bg-success">{{ ticket.status }}</span>
+
+                        {% else %}
+                            <span class="badge bg-secondary">{{ ticket.status }}</span>
+
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Created</th>
+                    <td>{{ ticket.created_at }}</td>
+                </tr>
+
+                <tr>
+                    <th>Description</th>
+                    <td>{{ ticket.description|linebreaks }}</td>
+                </tr>
+
+                <tr>
+                    <th>Attachment</th>
+                    <td>
+
+                        {% if ticket.attachment %}
+                            <a href="{{ ticket.attachment.url }}" target="_blank">
+                                <i class="bi bi-paperclip"></i>
+                                Download Attachment
+                            </a>
+                        {% else %}
+                            No attachment uploaded.
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+
+        <div class="glass-card">
+
+            <h4 class="mb-4">
+                <i class="bi bi-chat-dots-fill"></i>
+                Conversation
+            </h4>
+
+            {% for comment in comments %}
+
+                <div class="border rounded p-3 mb-3">
+
+                    <strong>{{ comment.author.username }}</strong>
+
+                    <small class="text-muted float-end">
+
+                        {{ comment.created_at }}
+
+                    </small>
+
+                    <hr>
+
+                    {{ comment.comment|linebreaks }}
+
+                </div>
+
+            {% empty %}
+
+                <div class="alert alert-light">
+
+                    No comments yet.
+
+                </div>
+
+            {% endfor %}
+
+            <hr>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                {{ comment_form.comment }}
+
+                <br>
+
+                <button class="btn btn-warning">
+
+                    <i class="bi bi-chat-left-text-fill"></i>
+
+                    Add Comment
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="glass-card mb-4">
+
+            <h5>Ticket Status</h5>
+
+            <hr>
+
+            <p>
+
+                <strong>Status</strong><br>
+
+                {{ ticket.status }}
+
+            </p>
+
+            <p>
+
+                <strong>Priority</strong><br>
+
+                {{ ticket.priority }}
+
+            </p>
+
+            <p>
+
+                <strong>Assigned Technician</strong><br>
+
+                {% if ticket.assigned_to %}
+                    {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username }}
+                {% else %}
+                    Awaiting Assignment
+                {% endif %}
+
+            </p>
+
+        </div>
+
+        {% if ticket.resolution %}
+
+        <div class="glass-card mb-4">
+
+            <h5>
+
+                <i class="bi bi-check-circle-fill"></i>
+
+                Resolution
+
+            </h5>
+
+            <hr>
+
+            {{ ticket.resolution|linebreaks }}
+
+        </div>
+
+        {% endif %}
+
+        {% if ticket.status == "Resolved" %}
+
+        <div class="glass-card">
+
+            <h5>
+
+                Support Rating
+
+            </h5>
+
+            <hr>
+
+            {% if ticket.satisfaction_rating %}
+
+                <h3>
+
+                    {{ ticket.satisfaction_rating }}/5 ⭐
+
+                </h3>
+
+            {% else %}
+
+                <a href="{% url 'rate_ticket' ticket.id %}"
+
+                   class="btn btn-warning w-100">
+
+                    Rate Support
+
+                </a>
+                
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

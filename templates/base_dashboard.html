@@ -1,0 +1,567 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>
+{% block title %}
+Help Desk
+{% endblock %}
+</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=4">
+<style>
+    .profile-wrapper, .notif-wrapper{
+        position:relative;
+        display:inline-block;
+    }
+
+    .profile-popup, .notif-popup{
+        position:absolute;
+        top:60px;
+        right:0;
+        z-index:10000;
+        opacity:0;
+        visibility:hidden;
+        transform:translateY(-10px);
+        transition:opacity .18s ease,
+                   transform .18s ease,
+                   visibility .18s;
+        pointer-events:none;
+    }
+
+    .profile-popup.show,
+    .notif-popup.show{
+        opacity:1;
+        visibility:visible;
+        transform:translateY(0);
+        pointer-events:auto;
+    }
+
+    .profile-popup{
+        width:300px;
+        background:#fff;
+        border-radius:22px;
+        box-shadow:0 20px 50px rgba(27,33,64,.25);
+        overflow:hidden;
+    }
+
+    /* ---------- Notification card ---------- */
+    .notif-popup{
+        top:52px;
+        width:340px;
+        max-height:440px;
+        background:#fff;
+        border-radius:20px;
+        box-shadow:0 20px 50px rgba(27,33,64,.25);
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+    }
+
+    .notif-popup-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:18px 20px 14px;
+        border-bottom:1px solid #f0f0f3;
+        flex-shrink:0;
+    }
+
+    .notif-popup-header h5{
+        font-size:.95rem;
+        font-weight:700;
+        color:#1b2140;
+        margin:0;
+    }
+
+    .notif-unread-badge{
+        background:#f17807;
+        color:#fff;
+        font-size:.68rem;
+        font-weight:700;
+        padding:3px 10px;
+        border-radius:999px;
+        line-height:1.4;
+    }
+
+    .notif-list{
+        overflow-y:auto;
+        max-height:380px;
+    }
+
+    .notif-item{
+        display:flex;
+        align-items:flex-start;
+        gap:12px;
+        padding:14px 20px;
+        text-decoration:none !important;
+        color:#1b2140 !important;
+        border-bottom:1px solid #f6f6f8;
+        transition:.15s;
+    }
+    .notif-item:last-child{
+        border-bottom:none;
+    }
+    .notif-item:hover{
+        background:rgba(241,120,7,.05);
+    }
+
+    .notif-item-icon{
+        width:34px;
+        height:34px;
+        border-radius:10px;
+        background:rgba(241,120,7,.1);
+        color:#f17807;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:.9rem;
+        flex-shrink:0;
+        margin-top:1px;
+    }
+
+    .notif-item-body{
+        flex:1;
+        min-width:0;
+    }
+
+    .notif-item p{
+        font-size:.83rem;
+        margin:0 0 3px;
+        line-height:1.4;
+        color:#1b2140;
+        font-weight:500;
+    }
+
+    .notif-item small{
+        color:rgba(27,33,64,.55);
+        font-size:.7rem;
+    }
+
+    .notif-dot{
+        width:8px;
+        height:8px;
+        border-radius:50%;
+        margin-top:6px;
+        flex-shrink:0;
+        background:transparent;
+    }
+
+    .notif-item.unread{
+        background:rgba(241,120,7,.04);
+    }
+    .notif-item.unread .notif-dot{
+        background:#f17807;
+    }
+    .notif-item.unread p{
+        font-weight:700;
+    }
+    .notif-item.unread .notif-item-icon{
+        background:#f17807;
+        color:#fff;
+    }
+
+    .notif-empty{
+        text-align:center;
+        padding:40px 20px;
+        color:rgba(27,33,64,.55);
+        font-size:.85rem;
+    }
+    .notif-empty i{
+        display:block;
+        font-size:1.8rem;
+        margin-bottom:10px;
+        color:#f17807;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- Animated Background -->
+
+<div class="fluid-bg"></div>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+<div class="blob blob4"></div>
+
+<!-- TOPBAR -->
+
+<header class="topbar">
+
+    <div class="topbar-left">
+
+        <img src="{% static 'images/NKMBV-37.png' %}" class="nav-logo">
+
+        <div>
+
+            <h5>NKMBV Help Desk</h5>
+
+            <small>IT Support Portal</small>
+
+        </div>
+
+    </div>
+
+    <div class="topbar-center">
+
+        <div class="search-box">
+
+            <i class="bi bi-search"></i>
+
+            <input
+                type="text"
+                placeholder="Search tickets...">
+
+        </div>
+
+    </div>
+
+    <div class="topbar-right">
+
+        <div class="notif-wrapper">
+
+            <div id="notifButton" class="icon-btn" onclick="togglePopup('notifPopup', event)">
+
+                <i class="bi bi-bell"></i>
+                {% if unread_notifications_count %}<span class="notification-dot"></span>{% endif %}
+
+            </div>
+
+            <div id="notifPopup" class="notif-popup">
+
+                <div class="notif-popup-header">
+                    <h5>Notifications</h5>
+                    {% if unread_notifications_count %}
+                    <span class="notif-unread-badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="notif-list">
+
+                    {% for note in notifications %}
+                    <a
+                        href="{% if note.ticket %}{% url 'ticket_detail' note.ticket.pk %}{% else %}#{% endif %}"
+                        class="notif-item {% if not note.is_read %}unread{% endif %}"
+                    >
+                        <div class="notif-item-icon"></div>
+                        <div>
+                            <p>{{ note.message }}</p>
+                            <small>{{ note.created_at|timesince }} ago</small>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-bell-slash"></i>
+                        No notifications yet.
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="profile-wrapper">
+
+            <div id="profileButton" class="profile-button" onclick="togglePopup('profilePopup', event)">
+
+                <img
+                    src="{% static 'images/default-avatar.png' %}"
+                    class="profile-avatar"
+                >
+
+                <div>
+
+                    <strong>
+
+                        {{ request.user.first_name }}
+                        {{ request.user.last_name }}
+
+                    </strong>
+
+                    <small>
+
+                        {{ request.user.role }}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div id="profilePopup" class="profile-popup">
+
+                <div class="profile-popup-banner"></div>
+
+                <div class="profile-popup-identity">
+
+                    <img
+                        src="{% static 'images/default-avatar.png' %}"
+                        class="popup-avatar"
+                    >
+
+                    <h5>
+
+                        {{ request.user.first_name }}
+                        {{ request.user.last_name }}
+
+                    </h5>
+
+                    <small>{{ request.user.email }}</small>
+
+                    <div class="profile-role-chip">{{ request.user.role }}</div>
+
+                </div>
+
+                <div class="profile-popup-info">
+
+                    <div class="profile-info-row">
+                        <i class="bi bi-person-vcard"></i>
+                        <span><strong>Employee No:</strong> {{ request.user.employee_number }}</span>
+                    </div>
+
+                </div>
+
+                <div class="profile-popup-menu">
+
+                    <a href="#">
+                        <i class="bi bi-person-fill"></i>
+                        My Profile
+                    </a>
+
+                    <a href="#">
+                        <i class="bi bi-gear-fill"></i>
+                        Account Settings
+                    </a>
+
+                    <a href="#">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        Change Password
+                    </a>
+
+                    <div class="profile-popup-divider"></div>
+
+                    <a href="{% url 'logout' %}" class="menu-item-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+<div class="dashboard-wrapper">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-header">
+
+            
+            <h4>
+
+                {{ request.user.first_name }}
+
+            </h4>
+
+            <p>
+
+                {{ request.user.role }}
+
+            </p>
+
+        </div>
+
+        <ul class="sidebar-menu">
+
+            <li>
+
+                <a href="{% url 'dashboard' %}" class="active">
+
+                    <i class="bi bi-grid-fill"></i>
+
+                    <span>Dashboard</span>
+
+                </a>
+
+            </li>
+
+            
+
+            <li>
+
+                <a href="{% url 'create_ticket' %}">
+    <i class="bi bi-plus-circle-fill"></i>
+    <span>Create Ticket</span>
+</a>
+
+            </li>
+
+            <li>
+
+                <a href="{% url 'ticket_history' %}">
+
+                    <i class="bi bi-clock-history"></i>
+
+                    <span>Ticket History</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="{% url 'knowledge_base' %}">
+
+                    <i class="bi bi-book-half"></i>
+
+                    <span>Knowledge Base</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="#">
+
+                    <i class="bi bi-person-fill"></i>
+
+                    <span>Profile</span>
+
+                </a>
+
+            </li>
+
+            <li>
+
+                <a href="{% url 'logout' %}">
+
+                    <i class="bi bi-box-arrow-right"></i>
+
+                    <span>Logout</span>
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </aside>
+
+    <!-- Main -->
+
+    <main class="main-content">
+
+        {% block content %}
+
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<script src="{% static 'js/dashboard.js' %}?v=2"></script>
+
+<script>
+    // Generic popup toggle — used by both the notification bell and profile avatar.
+    // Closes any other open popup first, so only one card is visible at a time.
+    function togglePopup(popupId, e) {
+        e.stopPropagation();
+
+        var popup = document.getElementById(popupId);
+        if (!popup) {
+            console.error(popupId + " element not found in DOM");
+            return;
+        }
+
+        var willOpen = !popup.classList.contains("show");
+
+        // close all popups first
+        document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (p) {
+            p.classList.remove("show");
+            p.style.opacity = "0";
+            p.style.visibility = "hidden";
+        });
+
+        if (willOpen) {
+            popup.classList.add("show");
+            popup.style.opacity = "1";
+            popup.style.visibility = "visible";
+            popup.style.transform = "translateY(0)";
+
+            // mark notifications as read once the bell is opened
+            if (popupId === "notifPopup") {
+                markNotificationsRead();
+            }
+        }
+    }
+
+    function markNotificationsRead() {
+        var dot = document.querySelector("#notifButton .notification-dot");
+        var badge = document.querySelector(".notif-unread-badge");
+        if (dot) dot.remove();
+        if (badge) badge.remove();
+        document.querySelectorAll(".notif-item.unread").forEach(function (item) {
+            item.classList.remove("unread");
+        });
+
+        fetch("{% url 'mark_notifications_read' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+        }).catch(function (err) {
+            console.error("Failed to mark notifications read:", err);
+        });
+    }
+
+    function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return "";
+    }
+
+    document.addEventListener("click", function () {
+        document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (p) {
+            p.classList.remove("show");
+            p.style.opacity = "0";
+            p.style.visibility = "hidden";
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (popup) {
+            popup.addEventListener("click", function (e) {
+                e.stopPropagation();
+            });
+        });
+        console.log("Popup scripts ready");
+    });
+</script>
+
+</body>
+
+</html>

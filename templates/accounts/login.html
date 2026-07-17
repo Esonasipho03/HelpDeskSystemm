@@ -1,0 +1,403 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login &middot; NKMB Help Desk</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+/* ==========================================================
+   NKMB Help Desk — Login
+   Ties into the same palette as dashboard.css:
+   accent #f17807, ink #1b2140, soft glass surfaces.
+   ========================================================== */
+
+:root{
+    --accent: #f17807;
+    --accent-soft: rgba(241,120,7,0.35);
+    --ink: #1b2140;
+    --ink-soft: rgba(27,33,64,0.65);
+    --radius: 20px;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color:var(--ink);
+    background:
+        radial-gradient(circle at 15% 20%, #ffe0c2 0%, transparent 45%),
+        radial-gradient(circle at 85% 10%, #c9e4ff 0%, transparent 50%),
+        radial-gradient(circle at 30% 85%, #ffd7e8 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, #d9f5e3 0%, transparent 50%),
+        linear-gradient(135deg, #eef2fb 0%, #f7ece1 100%);
+    min-height:100vh;
+}
+
+.auth-container{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+}
+
+.auth-shell{
+    width:100%;
+    max-width:1040px;
+    min-height:600px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    background:#fff;
+    border-radius:26px;
+    overflow:hidden;
+    box-shadow:0 25px 60px rgba(27,33,64,0.18);
+}
+
+/* ---------- Left brand panel ---------- */
+.login-left{
+    position:relative;
+    background:linear-gradient(160deg, var(--accent) 0%, #ff9a3c 55%, #ffb873 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:56px 48px;
+    overflow:hidden;
+}
+
+.login-left .blob{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(60px);
+    opacity:.35;
+}
+.l-blob1{
+    width:280px; height:280px;
+    top:-60px; left:-60px;
+    background:#fff;
+}
+.l-blob2{
+    width:240px; height:240px;
+    bottom:-70px; right:-40px;
+    background:#1b2140;
+    opacity:.15;
+}
+
+.login-content{
+    position:relative;
+    z-index:1;
+    text-align:center;
+    color:#fff;
+}
+
+.company-logo{
+    width:318px;
+    height:218px;
+    border-radius:70%;
+    object-fit:cover;
+    background:#fff;
+    padding:6px;
+    box-shadow:0 12px 30px rgba(0,0,0,.25);
+    margin-bottom:26px;
+}
+
+.login-content h2{
+    font-size:1.6rem;
+    font-weight:800;
+    margin-bottom:12px;
+}
+
+.login-content p{
+    font-size:.95rem;
+    line-height:1.6;
+    color:rgba(255,255,255,.92);
+    max-width:340px;
+    margin:0 auto 28px;
+}
+
+.brand-points{
+    list-style:none;
+    text-align:left;
+    display:inline-flex;
+    flex-direction:column;
+    gap:12px;
+}
+.brand-points li{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:.85rem;
+    font-weight:500;
+    color:#fff;
+}
+.brand-points i{
+    color:#fff;
+    opacity:.9;
+    font-size:.95rem;
+}
+
+/* ---------- Right login form ---------- */
+.login-right{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:56px 48px;
+}
+
+.login-card{
+    width:100%;
+    max-width:360px;
+}
+
+.login-card-header{
+    margin-bottom:28px;
+}
+.login-card-header h3{
+    font-size:1.5rem;
+    font-weight:800;
+    margin-bottom:6px;
+}
+.login-card-header p{
+    color:var(--ink-soft);
+    font-size:.88rem;
+}
+
+.login-alert{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(224,71,92,.12);
+    color:#c22e46;
+    padding:10px 14px;
+    border-radius:12px;
+    font-size:.82rem;
+    font-weight:600;
+    margin-bottom:18px;
+}
+
+.login-card label{
+    display:block;
+    font-size:.8rem;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+}
+
+.input-with-icon{
+    position:relative;
+    display:flex;
+    align-items:center;
+}
+.input-with-icon i:first-child{
+    position:absolute;
+    left:14px;
+    color:var(--ink-soft);
+    font-size:1rem;
+}
+.input-with-icon .form-control{
+    padding-left:40px;
+    height:48px;
+    border-radius:12px;
+    border:1px solid rgba(27,33,64,0.14);
+    background:#f8f9fc;
+    font-size:.9rem;
+}
+.input-with-icon .form-control:focus{
+    border-color:var(--accent);
+    background:#fff;
+    box-shadow:0 0 0 3px var(--accent-soft);
+    outline:none;
+}
+
+.toggle-password{
+    position:absolute;
+    right:12px;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    cursor:pointer;
+    font-size:1rem;
+    padding:4px;
+}
+.toggle-password:hover{ color:var(--ink); }
+
+.login-options{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:.8rem;
+    margin:14px 0 22px;
+}
+.remember-me{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:var(--ink-soft);
+    font-weight:500;
+    cursor:pointer;
+}
+.remember-me input{
+    accent-color:var(--accent);
+}
+.login-options a{
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:600;
+}
+.login-options a:hover{ text-decoration:underline; }
+
+.btn-login{
+    width:100%;
+    height:48px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),#ff9a3c);
+    color:#fff;
+    font-weight:700;
+    font-size:.92rem;
+    cursor:pointer;
+    box-shadow:0 12px 26px var(--accent-soft);
+    transition:.2s;
+}
+.btn-login:hover{
+    transform:translateY(-2px);
+    box-shadow:0 16px 32px var(--accent-soft);
+}
+
+.login-footer{
+    text-align:center;
+    font-size:.78rem;
+    color:var(--ink-soft);
+    margin-top:24px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px){
+    .auth-shell{
+        grid-template-columns:1fr;
+        max-width:420px;
+    }
+    .login-left{
+        padding:40px 32px;
+    }
+    .brand-points{ display:none; }
+}
+
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+
+    <div class="auth-shell">
+
+        <!-- LEFT: Brand panel -->
+        <div class="login-left">
+
+            <div class="blob l-blob1"></div>
+            <div class="blob l-blob2"></div>
+
+            <div class="login-content">
+
+                <img src="{% static 'images/NKMBV-37.png' %}" class="company-logo" alt="NKMB logo">
+
+                <h2>NKMB Help Desk</h2>
+                <p>IT support for the whole organisation &mdash; log tickets, track progress, and get help fast.</p>
+
+                <ul class="brand-points">
+                    <li><i class="bi bi-check-circle-fill"></i> Track every ticket in one place</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Get updates the moment things change</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Browse the knowledge base anytime</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Login form -->
+        <div class="login-right">
+
+            <div class="login-card">
+
+                <div class="login-card-header">
+                    <h3>Welcome back</h3>
+                    <p>Sign in to continue to your dashboard</p>
+                </div>
+
+                {% if form.errors %}
+                    <div class="login-alert">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        Your username or password is incorrect. Please try again.
+                    </div>
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label>Username</label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-person"></i>
+                            <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label>Password</label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-lock"></i>
+                            <input type="password" name="password" id="passwordField" class="form-control" placeholder="Enter your password" required>
+                            <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="login-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember">
+                            Remember me
+                        </label>
+                        <a href="#">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-login">
+                        Sign in
+                    </button>
+
+                </form>
+
+                <p class="login-footer">Need access? Contact your IT administrator.</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const toggleBtn = document.getElementById("togglePassword");
+    const pwField = document.getElementById("passwordField");
+    if (toggleBtn && pwField) {
+        toggleBtn.addEventListener("click", function () {
+            const isHidden = pwField.type === "password";
+            pwField.type = isHidden ? "text" : "password";
+            this.innerHTML = isHidden
+                ? '<i class="bi bi-eye-slash"></i>'
+                : '<i class="bi bi-eye"></i>';
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+{# templates/admin/tickets/ticket_changelist.html #}
+{% extends "admin/change_list.html" %}
+{% block object-tools-items %}
+  <li><a href="technician-report/">Technician Report</a></li>
+  {{ block.super }}
+{% endblock %}
