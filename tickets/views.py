@@ -392,6 +392,8 @@ def my_queue(request):
 
     context = {
         "tickets": tickets,
+        "status_filter": status,
+        "status_choices": TicketStatus.choices,
     }
 
     return render(
@@ -577,6 +579,10 @@ def update_ticket_status(request, pk):
                 ticket=ticket,
                 audience="employee",
             )
+
+    next_url = request.POST.get("next")
+    if next_url:
+        return redirect(next_url)
 
     return redirect(
         "technician_ticket_detail",
@@ -840,3 +846,4 @@ def admin_assign_ticket(request, pk):
 
     return redirect("unassigned_queue")
 
+ 
