@@ -525,17 +525,9 @@ def update_ticket_status(request, pk):
 
         if new_status == TicketStatus.RESOLVED:
 
-            if not resolution:
-                messages.error(
-                    request,
-                    "Please enter a resolution."
-                )
-                return redirect(
-                    "technician_ticket_detail",
-                    pk=ticket.pk
-                )
+            if resolution:
+                ticket.resolution = resolution
 
-            ticket.resolution = resolution
             ticket.resolved_at = timezone.now()
 
         elif new_status == TicketStatus.CLOSED:
@@ -845,5 +837,3 @@ def admin_assign_ticket(request, pk):
         )
 
     return redirect("unassigned_queue")
-
- 
