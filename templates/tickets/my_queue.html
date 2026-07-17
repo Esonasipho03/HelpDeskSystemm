@@ -31,7 +31,7 @@ My Queue
     {% for ticket in tickets %}
     <div class="queue-row">
         <div class="queue-main">
-            <a href="{% url 'ticket_detail' ticket.pk %}">{{ ticket.title }}</a>
+            <a href="{% url 'technician_ticket_detail' ticket.pk %}">{{ ticket.title }}</a>
             <div class="queue-meta">
                 #{{ ticket.pk }} · {{ ticket.created_by.first_name }} {{ ticket.created_by.last_name }}
                 · opened {{ ticket.created_at|timesince }} ago
@@ -62,3 +62,4 @@ My Queue
 </div>
 
 {% endblock %}
+
