@@ -9,7 +9,7 @@ class TicketStatus(models.TextChoices):
     IN_PROGRESS = "In Progress", "In Progress"
     PENDING = "Pending", "Pending"
     RESOLVED = "Resolved", "Resolved"
-    CLOSED = "Closed", "Closed"
+    
 
 
 class TicketPriority(models.TextChoices):
