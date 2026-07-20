@@ -9,7 +9,6 @@ class TicketStatus(models.TextChoices):
     IN_PROGRESS = "In Progress", "In Progress"
     PENDING = "Pending", "Pending"
     RESOLVED = "Resolved", "Resolved"
-    
 
 
 class TicketPriority(models.TextChoices):
@@ -156,11 +155,6 @@ class Ticket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     resolved_at = models.DateTimeField(
-        null=True,
-        blank=True
-    )
-
-    closed_at = models.DateTimeField(
         null=True,
         blank=True
     )
