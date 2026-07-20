@@ -344,7 +344,7 @@ def _build_technician_report_rows():
         ),
         closed_count=Count(
             "tickets_assigned",
-            filter=Q(tickets_assigned__status=TicketStatus.CLOSED),
+            filter=Q(tickets_assigned__status=TicketStatus.RESOLVED),
             distinct=True,
         ),
         open_count=Count(

@@ -176,6 +176,106 @@ Help Desk
         margin-bottom:10px;
         color:#f17807;
     }
+   .search-box-wrapper{
+    position:relative;
+    width:100%;
+}
+
+.search-dropdown{
+    position:absolute;
+    top:calc(100% + 10px);
+    left:0;
+    right:0;
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 20px 50px rgba(27,33,64,.25);
+    overflow:hidden;
+    z-index:10000;
+    display:none;
+}
+
+.search-dropdown.show{
+    display:block;
+}
+
+.search-dropdown-list{
+    max-height:380px;
+    overflow-y:auto;
+}
+
+.search-result-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 20px;
+    text-decoration:none !important;
+    color:#1b2140 !important;
+    border-bottom:1px solid #f6f6f8;
+    transition:.15s;
+}
+.search-result-item:last-child{
+    border-bottom:none;
+}
+.search-result-item:hover,
+.search-result-item.active{
+    background:rgba(241,120,7,.05);
+}
+
+.search-result-icon{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    background:rgba(241,120,7,.1);
+    color:#f17807;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.9rem;
+    flex-shrink:0;
+}
+
+.search-result-main{
+    flex:1;
+    min-width:0;
+}
+.search-result-main p{
+    margin:0 0 3px;
+    font-size:.83rem;
+    font-weight:600;
+    line-height:1.4;
+    color:#1b2140;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.search-result-main small{
+    color:rgba(27,33,64,.55);
+    font-size:.7rem;
+}
+
+.search-result-status{
+    flex-shrink:0;
+    font-size:.68rem;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:999px;
+    background:#f17807;
+    color:#fff;
+    white-space:nowrap;
+}
+
+.search-dropdown-empty{
+    text-align:center;
+    padding:40px 20px;
+    color:rgba(27,33,64,.55);
+    font-size:.85rem;
+}
+.search-dropdown-empty i{
+    display:block;
+    font-size:1.8rem;
+    margin-bottom:10px;
+    color:#f17807;
+}
 </style>
 </head>
 <body>
@@ -197,13 +297,20 @@ Help Desk
         </div>
     </div>
     <div class="topbar-center">
-        <form action="#" method="get" class="search-box">
-            <i class="bi bi-search"></i>
-            <input
-                type="text"
-                name="q"
-                placeholder="Search by ticket #, title, or requester...">
-        </form>
+        <div class="search-box-wrapper">
+    <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input
+            type="text"
+            id="ticketSearchInput"
+            autocomplete="off"
+            placeholder="Search by ticket #, title, or requester...">
+    </div>
+
+    <div id="searchDropdown" class="search-dropdown">
+        <div class="search-dropdown-list" id="searchDropdownList"></div>
+    </div>
+</div>
     </div>
     <div class="topbar-right">
         <div class="notif-wrapper">
@@ -304,31 +411,15 @@ Help Desk
 
                 </div>
 
-                <div class="profile-popup-info">
-
-                    <div class="profile-info-row">
-                        <i class="bi bi-person-vcard"></i>
-                        <span><strong>Employee No:</strong> {{ request.user.employee_number }}</span>
-                    </div>
-
-                </div>
+               
 
                 <div class="profile-popup-menu">
 
-                    <a href="{% url 'technician_profile' %}">
-                        <i class="bi bi-person-fill"></i>
-                        My Profile
-                    </a>
+                    
 
-                    <a href="#">
-                        <i class="bi bi-gear-fill"></i>
-                        Account Settings
-                    </a>
+                    
 
-                    <a href="#">
-                        <i class="bi bi-shield-lock-fill"></i>
-                        Change Password
-                    </a>
+                   
 
                     <div class="profile-popup-divider"></div>
 
@@ -394,7 +485,7 @@ Help Desk
             <li>
                 <a href="#" class="{% block nav_profile %}{% endblock %}">
                     <i class="bi bi-person-fill"></i>
-                    <span>Profile</span>
+                    <span>Profile</span>p
                 </a>
             </li>
 
@@ -488,6 +579,70 @@ Help Desk
         });
         console.log("Popup scripts ready");
     });
+
+    (function () {
+    var input = document.getElementById("ticketSearchInput");
+    var dropdown = document.getElementById("searchDropdown");
+    var list = document.getElementById("searchDropdownList");
+    var debounceTimer = null;
+
+    if (!input) return;
+
+    input.addEventListener("input", function () {
+        var query = input.value.trim();
+
+        clearTimeout(debounceTimer);
+
+        if (!query) {
+            dropdown.classList.remove("show");
+            return;
+        }
+
+        debounceTimer = setTimeout(function () {
+            fetch("{% url 'ticket_search_api' %}?q=" + encodeURIComponent(query))
+                .then(function (res) { return res.json(); })
+                .then(function (data) { renderResults(data.results); })
+                .catch(function (err) { console.error("Search failed:", err); });
+        }, 250);
+    });
+
+    function renderResults(results) {
+        list.innerHTML = "";
+
+        if (results.length === 0) {
+            list.innerHTML = '<div class="search-dropdown-empty">No tickets found.</div>';
+            dropdown.classList.add("show");
+            return;
+        }
+
+        results.forEach(function (ticket) {
+            var a = document.createElement("a");
+            a.href = ticket.url;
+            a.className = "search-result-item";
+            a.innerHTML =
+                '<div class="search-result-main">' +
+                    '<p>#' + ticket.id + " — " + ticket.title + "</p>" +
+                    "<small>" + ticket.requester + "</small>" +
+                "</div>" +
+                '<span class="search-result-status">' + ticket.status + "</span>";
+            list.appendChild(a);
+        });
+
+        dropdown.classList.add("show");
+    }
+
+    document.addEventListener("click", function (e) {
+        if (!dropdown.contains(e.target) && e.target !== input) {
+            dropdown.classList.remove("show");
+        }
+    });
+
+    input.addEventListener("focus", function () {
+        if (list.innerHTML.trim() !== "") {
+            dropdown.classList.add("show");
+        }
+    });
+})();
 </script>
 </body>
 </html>

@@ -76,4 +76,5 @@ path(
     views.preview_article,
     name="preview_article",
 ),
+path("search/api/", views.ticket_search_api, name="ticket_search_api"),
 ]

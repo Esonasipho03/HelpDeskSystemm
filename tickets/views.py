@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from .models import (
     Announcement,
@@ -837,3 +838,38 @@ def admin_assign_ticket(request, pk):
         )
 
     return redirect("unassigned_queue")
+
+from django.http import JsonResponse
+
+@login_required
+def ticket_search_api(request):
+    query = request.GET.get("q", "").strip()
+
+    if not query:
+        return JsonResponse({"results": []})
+
+    filters = (
+        Q(title__icontains=query)
+        | Q(created_by__first_name__icontains=query)
+        | Q(created_by__last_name__icontains=query)
+        | Q(created_by__username__icontains=query)
+    )
+
+    if query.isdigit():
+        filters |= Q(pk=int(query))
+
+    tickets = Ticket.objects.filter(filters).order_by("-created_at")[:8]
+
+    results = [
+        {
+            "id": ticket.pk,
+            "title": ticket.title,
+            "requester": ticket.created_by.get_full_name() or ticket.created_by.username,
+            "status": ticket.get_status_display(),
+            "priority": ticket.priority,
+            "url": reverse("technician_ticket_detail", kwargs={"pk": ticket.pk}),
+        }
+        for ticket in tickets
+    ]
+
+    return JsonResponse({"results": results})
