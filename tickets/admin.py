@@ -67,7 +67,7 @@ def _technician_report_stats(start_date=None, end_date=None):
             total_tickets=Count("id"),
             resolved_tickets=Count(
                 "id",
-                filter=Q(status__in=[TicketStatus.RESOLVED, TicketStatus.CLOSED]),
+                filter=Q(status__in=[TicketStatus.RESOLVED]),
             ),
             avg_resolution_time=Avg(
                 resolution_time,

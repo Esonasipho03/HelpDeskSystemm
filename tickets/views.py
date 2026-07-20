@@ -452,7 +452,7 @@ def technician_profile(request):
         "closed":
         Ticket.objects.filter(
             assigned_to=request.user,
-            status=TicketStatus.CLOSED
+            status=TicketStatus.RESOLVED
         ).count(),
 
     }
@@ -530,7 +530,7 @@ def update_ticket_status(request, pk):
 
             ticket.resolved_at = timezone.now()
 
-        elif new_status == TicketStatus.CLOSED:
+        elif new_status == TicketStatus.RESOLVED:
             ticket.closed_at = timezone.now()
 
         ticket.status = new_status
@@ -557,7 +557,7 @@ def update_ticket_status(request, pk):
                 ticket=ticket,
                 audience="employee",
             )
-        elif new_status == TicketStatus.CLOSED:
+        elif new_status == TicketStatus.RESOLVED:
             create_notification(
                 ticket.created_by,
                 f"Ticket #{ticket.id} has been closed.",

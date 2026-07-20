@@ -46,11 +46,11 @@ def employee_dashboard(request):
         ).count(),
         "pending_reply_count": my_tickets.filter(status=TicketStatus.PENDING).count(),
         "resolved_tickets_count": my_tickets.filter(
-            status__in=[TicketStatus.RESOLVED, TicketStatus.CLOSED]
+            status=TicketStatus.RESOLVED
         ).count(),
         "recent_tickets": my_tickets[:5],
         "ticket_to_rate": my_tickets.filter(
-            status__in=[TicketStatus.RESOLVED, TicketStatus.CLOSED],
+            status=TicketStatus.RESOLVED,
             satisfaction_rating__isnull=True,
         ).first(),
         "my_assets": user.assets.all(),
@@ -303,7 +303,7 @@ def update_ticket_status(request, pk):
         valid_statuses = {choice.value for choice in TicketStatus}
         if new_status in valid_statuses:
             ticket.status = new_status
-            if new_status in {TicketStatus.RESOLVED, TicketStatus.CLOSED}:
+            if new_status in {TicketStatus.RESOLVED}:
                 ticket.resolved_at = timezone.now()
             ticket.save()
             messages.success(request, f"Ticket #{ticket.pk} marked as {ticket.get_status_display()}.")
