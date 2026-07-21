@@ -286,7 +286,12 @@ Help Desk
 </style>
 </head>
 
-<body>
+<body
+    data-notif-poll-url="{% url 'notifications_latest' %}"
+    data-notif-sound-url="{% static 'sounds/notify.wav' %}"
+    data-notif-icon-url="{% static 'images/NKMBV-37.png' %}"
+    data-notif-last-id="{{ notifications.0.id|default:0 }}"
+>
 
 <!-- Animated Background -->
 
@@ -568,6 +573,7 @@ Help Desk
 </div>
 
 <script src="{% static 'js/dashboard.js' %}?v=2"></script>
+<script src="{% static 'js/notifications-live.js' %}?v=1"></script>
 
 <script>
     // Generic popup toggle — used by both the notification bell and profile avatar.

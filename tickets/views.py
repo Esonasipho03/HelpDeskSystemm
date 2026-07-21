@@ -122,6 +122,52 @@ def mark_notifications_read(request):
 
 
 @login_required
+def notifications_latest(request):
+    """Polled by the browser to detect brand-new notifications so we can
+    pop a desktop notification + play a sound without a full page reload."""
+    audience = _audience_for(request.user)
+
+    try:
+        after_id = int(request.GET.get("after", 0))
+    except (TypeError, ValueError):
+        after_id = 0
+
+    qs = (
+        Notification.objects.filter(
+            user=request.user,
+            audience=audience,
+            id__gt=after_id,
+        )
+        .order_by("id")[:20]
+    )
+
+    def note_url(note):
+        if not note.ticket_id:
+            return ""
+        if audience == "technician":
+            return reverse("technician_ticket_detail", args=[note.ticket_id])
+        return reverse("ticket_detail", args=[note.ticket_id])
+
+    data = [
+        {
+            "id": note.id,
+            "message": note.message,
+            "url": note_url(note),
+            "created_at": note.created_at.isoformat(),
+        }
+        for note in qs
+    ]
+
+    unread_count = Notification.objects.filter(
+        user=request.user,
+        audience=audience,
+        is_read=False,
+    ).count()
+
+    return JsonResponse({"notifications": data, "unread_count": unread_count})
+
+
+@login_required
 def ticket_history(request):
 
     tickets = Ticket.objects.filter(

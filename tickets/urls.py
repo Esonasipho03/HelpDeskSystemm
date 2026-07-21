@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("notifications/mark-read/", views.mark_notifications_read, name="mark_notifications_read"),
+    path("notifications/latest/", views.notifications_latest, name="notifications_latest"),
     path("tickets/<int:pk>/admin-assign/", views.admin_assign_ticket, name="admin_assign_ticket"),
     path("create/", views.create_ticket, name="create_ticket"),
     path("history/", views.ticket_history, name="ticket_history"),
