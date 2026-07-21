@@ -217,7 +217,7 @@ Ticket Details
                 <strong>Assigned Technician</strong><br>
 
                 {% if ticket.assigned_to %}
-                    {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username }}
+                    {{ ticket.assigned_to.get_username|default:ticket.assigned_to.username }}
                 {% else %}
                     Awaiting Assignment
                 {% endif %}
