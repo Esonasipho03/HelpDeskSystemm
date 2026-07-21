@@ -17,7 +17,7 @@ class TicketCreateForm(forms.ModelForm):
         ]
 
         labels = {
-            "title": "Issue Summary",
+            "title": "Title",
             "category": "Problem Category",
             "department": "Department",
             "priority": "Priority",
@@ -29,7 +29,7 @@ class TicketCreateForm(forms.ModelForm):
 
             "title": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "Brief summary of the issue"
+                "placeholder": "Tittle"
             }),
 
             "category": forms.Select(attrs={
