@@ -182,8 +182,21 @@ Employee Dashboard
             {% endfor %}
         </div>
 
-        
+        <!-- Satisfaction survey: only shown when a resolved ticket is unrated -->
+        {% if ticket_to_rate %}
+        <div class="glass-card survey-card">
+            <div class="ticket-ref">Ticket #{{ ticket_to_rate.id }} — {{ ticket_to_rate.title }}</div>
+            <p>How was your support experience?</p>
+            <a href="{% url 'rate_ticket' ticket_to_rate.pk %}" class="glass-button">
+                <i class="bi bi-star-fill"></i>
+                Rate this ticket
+            </a>
+        </div>
+        {% endif %}
 
+    </div>
+
+    <div>
 
         <div class="glass-card panel">
             <h3>Announcements</h3>
