@@ -1,0 +1,76 @@
+{% extends "base_admin_dashboard.html" %}
+
+{% block title %}
+{% if is_edit %}Edit Task{% else %}Assign New Task{% endif %}
+{% endblock %}
+
+{% block nav_admin_task_create %}{% if not is_edit %}active{% endif %}{% endblock %}
+{% block nav_admin_tasks %}{% if is_edit %}active{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h1>{% if is_edit %}Edit Task{% else %}Assign New IT Task{% endif %}</h1>
+        <p>{% if is_edit %}Update the details or reassign this task.{% else %}Hand a task directly to a technician — separate from employee tickets.{% endif %}</p>
+    </div>
+    <a href="{% url 'admin_task_list' %}" class="glass-button glass-button-ghost">
+        <i class="bi bi-arrow-left"></i>
+        Back to Tasks
+    </a>
+</div>
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    <strong>Please correct the following:</strong>
+    {{ form.errors }}
+</div>
+{% endif %}
+
+<div class="glass-card">
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="row">
+
+<div class="col-md-12 mb-3">
+    <label class="form-label">Task Title</label>
+    {{ form.title }}
+</div>
+
+<div class="col-md-6 mb-3">
+    <label class="form-label">Assign To</label>
+    {{ form.assigned_to }}
+</div>
+
+<div class="col-md-6 mb-3">
+    <label class="form-label">Priority</label>
+    {{ form.priority }}
+</div>
+
+<div class="col-md-6 mb-3">
+    <label class="form-label">Due Date</label>
+    {{ form.due_date }}
+</div>
+
+<div class="col-md-12 mb-4">
+    <label class="form-label">Task Details</label>
+    {{ form.description }}
+</div>
+
+</div>
+
+<div class="d-flex justify-content-end gap-2">
+    <a href="{% url 'admin_task_list' %}" class="btn btn-light">Cancel</a>
+    <button type="submit" class="btn btn-warning">
+        <i class="bi bi-send-fill"></i>
+        {% if is_edit %}Save Changes{% else %}Assign Task{% endif %}
+    </button>
+</div>
+
+</form>
+
+</div>
+
+{% endblock %}

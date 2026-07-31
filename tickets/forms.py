@@ -1,5 +1,8 @@
 from django import forms
-from .models import Ticket, TicketComment,KnowledgeBaseArticle
+from django.contrib.auth import get_user_model
+from .models import Ticket, TicketComment, KnowledgeBaseArticle, ITTask
+
+User = get_user_model()
 
 
 class TicketCreateForm(forms.ModelForm):
@@ -153,3 +156,59 @@ class KnowledgeBaseArticleForm(forms.ModelForm):
             }),
 
         }
+
+
+class ITTaskForm(forms.ModelForm):
+
+    class Meta:
+        model = ITTask
+
+        fields = [
+            "title",
+            "description",
+            "assigned_to",
+            "priority",
+            "due_date",
+        ]
+
+        labels = {
+            "title": "Task Title",
+            "description": "Task Details",
+            "assigned_to": "Assign To",
+            "priority": "Priority",
+            "due_date": "Due Date",
+        }
+
+        widgets = {
+
+            "title": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Example: Reimage the Finance department laptops"
+            }),
+
+            "description": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 5,
+                "placeholder": "Describe what needs to be done..."
+            }),
+
+            "assigned_to": forms.Select(attrs={
+                "class": "form-select"
+            }),
+
+            "priority": forms.Select(attrs={
+                "class": "form-select"
+            }),
+
+            "due_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date"
+            }),
+
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only technicians are valid assignees.
+        self.fields["assigned_to"].queryset = User.objects.filter(role="TECHNICIAN")
+        self.fields["due_date"].required = False

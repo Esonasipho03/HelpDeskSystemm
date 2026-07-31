@@ -59,6 +59,37 @@ def employee_dashboard(request):
     return render(request, "dashboard/employee_dashboard.html", context)
 
 
+def _is_admin_role(user):
+    role = str(getattr(user, "role", "")).upper()
+    return role == "ADMIN" or user.is_superuser
+
+
+@login_required
+def admin_dashboard(request):
+    from tickets.models import ITTask, ITTaskStatus
+
+    if not _is_admin_role(request.user):
+        messages.error(request, "You don't have permission to view this page.")
+        return redirect("dashboard")
+
+    tasks = ITTask.objects.select_related("assigned_to")
+
+    context = {
+        "total_tickets": Ticket.objects.count(),
+        "unassigned_count": Ticket.objects.filter(assigned_to__isnull=True).count(),
+        "open_count": Ticket.objects.filter(
+            status__in=[TicketStatus.OPEN, TicketStatus.IN_PROGRESS]
+        ).count(),
+        "resolved_count": Ticket.objects.filter(status=TicketStatus.RESOLVED).count(),
+        "technician_count": User.objects.filter(role="TECHNICIAN").count(),
+        "open_task_count": tasks.exclude(status=ITTaskStatus.COMPLETED).count(),
+        "recent_tasks": tasks.order_by("-created_at")[:8],
+        "recent_tickets": Ticket.objects.order_by("-created_at")[:8],
+        "announcements": Announcement.objects.filter(is_active=True)[:5],
+    }
+    return render(request, "dashboard/admin_dashboard.html", context)
+
+
 @login_required
 def create_ticket(request):
     initial = {}
@@ -157,7 +188,7 @@ def _is_technician(user):
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
-from tickets.models import Ticket, Announcement
+from tickets.models import Ticket, Announcement, ITTask, ITTaskStatus
 
 
 @login_required
@@ -169,7 +200,17 @@ def technician_dashboard(request):
         assigned_to=user
     )
 
+    my_tasks = ITTask.objects.filter(assigned_to=user)
+
     context = {
+
+        # IT Tasks assigned by the admin
+
+        "it_tasks_count": my_tasks.exclude(
+            status=ITTaskStatus.COMPLETED
+        ).count(),
+
+        "it_tasks": my_tasks[:6],
 
         # Dashboard statistics
 

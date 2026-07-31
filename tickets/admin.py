@@ -14,6 +14,7 @@ from django.contrib.auth import get_user_model
 from .models import (
     Announcement,
     Asset,
+    ITTask,
     Ticket,
     TicketComment,
     TicketStatus,
@@ -311,4 +312,64 @@ class KnowledgeBaseArticleAdmin(admin.ModelAdmin):
         "summary",
         "keywords",
     )
+
+
+@admin.register(ITTask)
+class ITTaskAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "title",
+        "assigned_to",
+        "priority",
+        "status",
+        "due_date",
+        "assigned_by",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+        "priority",
+        "assigned_to",
+    )
+
+    search_fields = (
+        "title",
+        "description",
+        "assigned_to__username",
+        "assigned_to__first_name",
+        "assigned_to__last_name",
+    )
+
+    readonly_fields = (
+        "assigned_by",
+        "created_at",
+        "updated_at",
+        "completed_at",
+    )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Only technicians should show up as assignable — admins and
+        # employees are never valid targets for an IT task.
+        if db_field.name == "assigned_to":
+            kwargs["queryset"] = User.objects.filter(role="TECHNICIAN")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        is_new = obj.pk is None
+        reassigned = "assigned_to" in form.changed_data
+
+        if is_new:
+            obj.assigned_by = request.user
+
+        super().save_model(request, obj, form, change)
+
+        if is_new or reassigned:
+            create_notification(
+                obj.assigned_to,
+                f"You were assigned a new IT task: \"{obj.title}\" by "
+                f"{request.user.get_full_name() or request.user.username}.",
+                audience="technician",
+            )
     

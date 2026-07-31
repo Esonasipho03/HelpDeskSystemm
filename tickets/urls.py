@@ -39,6 +39,12 @@ path(
     path("technician/tickets/", views.all_tickets, name="all_tickets"),
     path("technician/search/", views.ticket_search, name="ticket_search"),
     path("technician/profile/", views.technician_profile, name="technician_profile"),
+    path("technician/tasks/", views.technician_tasks, name="technician_tasks"),
+    path("technician/tasks/<int:pk>/", views.technician_task_detail, name="technician_task_detail"),
+    path("technician/tasks/<int:pk>/status/", views.update_task_status, name="update_task_status"),
+    path("admin/tasks/", views.admin_task_list, name="admin_task_list"),
+    path("admin/tasks/create/", views.admin_task_create, name="admin_task_create"),
+    path("admin/tasks/<int:pk>/edit/", views.admin_task_edit, name="admin_task_edit"),
     path("technician/tickets/<int:pk>/claim/", views.claim_ticket, name="claim_ticket"),
     path("technician/tickets/<int:pk>/status/", views.update_ticket_status, name="update_ticket_status"),
     

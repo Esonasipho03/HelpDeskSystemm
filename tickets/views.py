@@ -10,6 +10,8 @@ from django.urls import reverse
 from .models import (
     Announcement,
     Asset,
+    ITTask,
+    ITTaskStatus,
     KnowledgeBaseArticle,
     Notification,
     Ticket,
@@ -22,6 +24,7 @@ from .forms import (
     TicketCommentForm,
     TicketCreateForm,
     KnowledgeBaseArticleForm,
+    ITTaskForm,
 )
 
 User = get_user_model()
@@ -105,6 +108,7 @@ def create_ticket(request):
         "tickets/create_ticket.html",
         {
             "form": form,
+            "base_template": "base_admin_dashboard.html" if _is_admin(request.user) else "base_dashboard.html",
         },
     )
 
@@ -188,6 +192,7 @@ def ticket_history(request):
             "tickets": tickets,
             "status_choices": TicketStatus.choices,
             "status_filter": status,
+            "base_template": "base_admin_dashboard.html" if _is_admin(request.user) else "base_dashboard.html",
         },
     )
 
@@ -258,6 +263,7 @@ def ticket_detail(request, pk):
             "ticket": ticket,
             "comments": comments,
             "comment_form": comment_form,
+            "base_template": "base_admin_dashboard.html" if _is_admin(request.user) else "base_dashboard.html",
         },
     )
 
@@ -409,16 +415,31 @@ def article_detail(request, pk):
 def all_tickets(request):
     tickets = Ticket.objects.all().order_by("-created_at")
 
-    q = request.GET.get("q")
+    q = request.GET.get("search") or request.GET.get("q")
+    status = request.GET.get("status")
+    priority = request.GET.get("priority")
 
     if q:
         tickets = tickets.filter(
             title__icontains=q
         )
 
-    return render(request, "tickets/all_tickets.html", {
+    if status:
+        tickets = tickets.filter(status=status)
+
+    if priority:
+        tickets = tickets.filter(priority=priority)
+
+    context = {
         "tickets": tickets,
-    })
+        "status_choices": TicketStatus.choices,
+        "priority_choices": TicketPriority.choices,
+    }
+
+    if _is_admin(request.user):
+        return render(request, "tickets/admin_all_tickets.html", context)
+
+    return render(request, "tickets/all_tickets.html", context)
 
 
 @login_required
@@ -456,6 +477,18 @@ def unassigned_queue(request):
     tickets = Ticket.objects.filter(
         assigned_to__isnull=True
     )
+
+    if _is_admin(request.user):
+        technicians = User.objects.filter(role="TECHNICIAN")
+
+        return render(
+            request,
+            "tickets/admin_unassigned_queue.html",
+            {
+                "tickets": tickets,
+                "technicians": technicians,
+            }
+        )
 
     return render(
         request,
@@ -509,6 +542,69 @@ def technician_profile(request):
         "tickets/profile.html",
         context,
     )
+
+
+@login_required
+def technician_tasks(request):
+    """IT tasks the admin has assigned directly to this technician —
+    separate from tickets, since employees never raised them."""
+
+    tasks = ITTask.objects.filter(assigned_to=request.user)
+
+    status_filter = request.GET.get("status")
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+
+    return render(request, "tickets/it_tasks.html", {
+        "tasks": tasks,
+        "status_filter": status_filter,
+        "status_choices": ITTaskStatus.choices,
+    })
+
+
+@login_required
+def technician_task_detail(request, pk):
+    """Full details of a single IT task, viewable/updatable only by the
+    technician it was assigned to."""
+    task = get_object_or_404(ITTask, pk=pk, assigned_to=request.user)
+
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        valid_statuses = {choice.value for choice in ITTaskStatus}
+        if new_status in valid_statuses:
+            task.status = new_status
+            if new_status == ITTaskStatus.COMPLETED:
+                task.completed_at = timezone.now()
+            else:
+                task.completed_at = None
+            task.save()
+            messages.success(request, f"Task marked as {task.get_status_display()}.")
+            return redirect("technician_task_detail", pk=task.pk)
+
+    return render(request, "tickets/it_task_detail.html", {
+        "task": task,
+        "status_choices": ITTaskStatus.choices,
+    })
+
+
+@login_required
+def update_task_status(request, pk):
+    """Technician updates the status of an IT task assigned to them."""
+    if request.method == "POST":
+        task = get_object_or_404(ITTask, pk=pk, assigned_to=request.user)
+        new_status = request.POST.get("status")
+        valid_statuses = {choice.value for choice in ITTaskStatus}
+        if new_status in valid_statuses:
+            task.status = new_status
+            if new_status == ITTaskStatus.COMPLETED:
+                task.completed_at = timezone.now()
+            else:
+                task.completed_at = None
+            task.save()
+            messages.success(request, f"Task \"{task.title}\" marked as {task.get_status_display()}.")
+
+    next_url = request.POST.get("next") or "technician_tasks"
+    return redirect(next_url)
 
 
 @login_required
@@ -688,6 +784,8 @@ def technician_ticket_detail(request, pk):
             "comments": public_comments,
             "internal_comments": internal_comments,
             "comment_form": comment_form,
+            "base_template": "base_admin_dashboard.html" if _is_admin(request.user) else "base_technician_dashboard .html",
+            "back_url_name": "all_tickets" if _is_admin(request.user) else "my_queue",
         },
     )
 
@@ -884,6 +982,104 @@ def admin_assign_ticket(request, pk):
         )
 
     return redirect("unassigned_queue")
+
+
+@login_required
+def admin_task_list(request):
+    """Real-site page (not /admin/) where an admin can see and manage
+    every IT task handed out to technicians."""
+
+    if not _is_admin(request.user):
+        messages.error(request, "You don't have permission to view this page.")
+        return redirect("dashboard")
+
+    tasks = ITTask.objects.select_related("assigned_to", "assigned_by").all()
+
+    status_filter = request.GET.get("status")
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+
+    technician_filter = request.GET.get("technician")
+    if technician_filter:
+        tasks = tasks.filter(assigned_to__username=technician_filter)
+
+    return render(request, "tickets/admin_task_list.html", {
+        "tasks": tasks,
+        "status_filter": status_filter,
+        "technician_filter": technician_filter,
+        "status_choices": ITTaskStatus.choices,
+        "technicians": User.objects.filter(role="TECHNICIAN"),
+    })
+
+
+@login_required
+def admin_task_create(request):
+    """Real-site page where an admin assigns a new IT task to a technician."""
+
+    if not _is_admin(request.user):
+        messages.error(request, "You don't have permission to do that.")
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = ITTaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.assigned_by = request.user
+            task.save()
+
+            create_notification(
+                task.assigned_to,
+                f"You were assigned a new IT task: \"{task.title}\" by "
+                f"{request.user.get_full_name() or request.user.username}.",
+                audience="technician",
+            )
+
+            messages.success(request, f"Task \"{task.title}\" assigned to "
+                              f"{task.assigned_to.get_full_name() or task.assigned_to.username}.")
+            return redirect("admin_task_list")
+    else:
+        form = ITTaskForm()
+
+    return render(request, "tickets/admin_task_form.html", {
+        "form": form,
+        "is_edit": False,
+    })
+
+
+@login_required
+def admin_task_edit(request, pk):
+    """Real-site page where an admin edits or reassigns an existing IT task."""
+
+    if not _is_admin(request.user):
+        messages.error(request, "You don't have permission to do that.")
+        return redirect("dashboard")
+
+    task = get_object_or_404(ITTask, pk=pk)
+    previous_assignee = task.assigned_to
+
+    if request.method == "POST":
+        form = ITTaskForm(request.POST, instance=task)
+        if form.is_valid():
+            task = form.save()
+
+            if task.assigned_to != previous_assignee:
+                create_notification(
+                    task.assigned_to,
+                    f"You were assigned IT task: \"{task.title}\" by "
+                    f"{request.user.get_full_name() or request.user.username}.",
+                    audience="technician",
+                )
+
+            messages.success(request, f"Task \"{task.title}\" updated.")
+            return redirect("admin_task_list")
+    else:
+        form = ITTaskForm(instance=task)
+
+    return render(request, "tickets/admin_task_form.html", {
+        "form": form,
+        "task": task,
+        "is_edit": True,
+    })
 
 from django.http import JsonResponse
 

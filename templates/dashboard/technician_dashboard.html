@@ -275,6 +275,66 @@ Open
 
 </div>
 
+<br>
+
+<div class="glass-card panel">
+
+<h3>
+
+IT Tasks
+
+<a href="{% url 'technician_tasks' %}">
+
+View All
+
+</a>
+
+</h3>
+
+{% for task in it_tasks %}
+
+<div class="activity-item">
+
+<div class="activity-dot {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-info{% else %}bg-warning{% endif %}"></div>
+
+<div>
+
+<strong>
+
+<a href="{% url 'technician_task_detail' task.pk %}">{{ task.title }}</a>
+
+</strong>
+
+<br>
+
+<small>
+
+Assigned by {{ task.assigned_by.get_full_name|default:task.assigned_by.username }}
+
+•
+
+{{ task.created_at|timesince }} ago
+
+</small>
+
+</div>
+
+<span class="status-badge">
+
+{{ task.status }}
+
+</span>
+
+</div>
+
+{% empty %}
+
+<p>No IT tasks assigned to you.</p>
+
+{% endfor %}
+
+</div>
+
 </div>
 
 <!-- RIGHT -->

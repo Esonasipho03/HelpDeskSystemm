@@ -327,3 +327,65 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message
+
+
+class ITTaskPriority(models.TextChoices):
+    LOW = "Low", "Low"
+    MEDIUM = "Medium", "Medium"
+    HIGH = "High", "High"
+
+
+class ITTaskStatus(models.TextChoices):
+    PENDING = "Pending", "Pending"
+    IN_PROGRESS = "In Progress", "In Progress"
+    COMPLETED = "Completed", "Completed"
+
+
+class ITTask(models.Model):
+    """An internal task the admin hands directly to a technician —
+    separate from a ticket, since it isn't raised by an employee."""
+
+    title = models.CharField(max_length=200)
+
+    description = models.TextField(blank=True)
+
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="it_tasks",
+        limit_choices_to={"role": "TECHNICIAN"},
+    )
+
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="it_tasks_created",
+    )
+
+    priority = models.CharField(
+        max_length=20,
+        choices=ITTaskPriority.choices,
+        default=ITTaskPriority.MEDIUM,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=ITTaskStatus.choices,
+        default=ITTaskStatus.PENDING,
+    )
+
+    due_date = models.DateField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Task #{self.id} - {self.title}"

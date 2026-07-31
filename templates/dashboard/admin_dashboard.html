@@ -1,0 +1,131 @@
+{% extends "base_admin_dashboard.html" %}
+
+{% block title %}
+Admin Dashboard
+{% endblock %}
+
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h2>Welcome back, {{ request.user.first_name|default:request.user.username }}</h2>
+        <p>Assign IT tasks to technicians and keep an eye on the overall ticket queue.</p>
+    </div>
+    <a href="{% url 'admin_task_create' %}" class="glass-button">
+        <i class="bi bi-plus-circle-fill"></i>
+        Assign New Task
+    </a>
+</div>
+
+<div class="stat-grid">
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Total Tickets</span>
+            <div class="stat-icon bg-primary"><i class="bi bi-ticket-detailed-fill"></i></div>
+        </div>
+        <h2>{{ total_tickets }}</h2>
+    </div>
+
+    <a href="{% url 'unassigned_queue' %}" class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Unassigned</span>
+            <div class="stat-icon bg-warning"><i class="bi bi-inbox-fill"></i></div>
+        </div>
+        <h2>{{ unassigned_count }}</h2>
+    </a>
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Open</span>
+            <div class="stat-icon bg-info"><i class="bi bi-folder2-open"></i></div>
+        </div>
+        <h2>{{ open_count }}</h2>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Resolved</span>
+            <div class="stat-icon bg-success"><i class="bi bi-check-circle"></i></div>
+        </div>
+        <h2>{{ resolved_count }}</h2>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Technicians</span>
+            <div class="stat-icon bg-primary"><i class="bi bi-person-workspace"></i></div>
+        </div>
+        <h2>{{ technician_count }}</h2>
+    </div>
+
+    <div class="glass-card stat-card">
+        <div class="stat-top">
+            <span>Open IT Tasks</span>
+            <div class="stat-icon bg-warning"><i class="bi bi-clipboard-check-fill"></i></div>
+        </div>
+        <h2>{{ open_task_count }}</h2>
+    </div>
+
+</div>
+
+<div class="grid-2col">
+
+<div>
+
+<div class="glass-card panel">
+    <h3>
+        Recent IT Tasks
+        <a href="{% url 'admin_task_list' %}">View All</a>
+    </h3>
+
+    {% for task in recent_tasks %}
+    <div class="activity-item">
+        <div class="activity-dot {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-info{% else %}bg-warning{% endif %}"></div>
+        <div>
+            <strong>{{ task.title }}</strong>
+            <br>
+            <small>
+                {{ task.assigned_to.get_full_name|default:task.assigned_to.username }}
+                &middot; {{ task.created_at|timesince }} ago
+            </small>
+        </div>
+        <span class="status-badge">{{ task.status }}</span>
+    </div>
+    {% empty %}
+    <p>No IT tasks assigned yet.</p>
+    {% endfor %}
+</div>
+
+</div>
+
+<div>
+
+<div class="glass-card panel">
+    <h3>Recent Tickets</h3>
+
+    {% for ticket in recent_tickets %}
+    <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div>
+            <strong>#{{ ticket.id }} {{ ticket.title }}</strong>
+            <br>
+            <small>
+                {{ ticket.created_by }}
+                &middot; {{ ticket.created_at|timesince }} ago
+            </small>
+        </div>
+        <span class="status-badge">{{ ticket.status }}</span>
+    </div>
+    {% empty %}
+    <p>No tickets yet.</p>
+    {% endfor %}
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

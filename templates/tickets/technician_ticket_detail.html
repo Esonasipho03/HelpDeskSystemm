@@ -1,8 +1,11 @@
-{% extends "base_technician_dashboard .html" %}
+{% extends base_template|default:"base_technician_dashboard .html" %}
 
 {% block title %}
 Ticket #{{ ticket.id }}
 {% endblock %}
+
+{% block nav_all_tickets %}active{% endblock %}
+{% block nav_my_queue %}{% endblock %}
 
 {% block content %}
 
@@ -10,7 +13,7 @@ Ticket #{{ ticket.id }}
 
     <div>
 
-        <a href="{% url 'my_queue' %}" class="btn btn-outline-secondary">
+        <a href="{% url back_url_name|default:'my_queue' %}" class="btn btn-outline-secondary">
 
             <i class="bi bi-arrow-left"></i>
 

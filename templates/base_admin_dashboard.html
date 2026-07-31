@@ -1,19 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>
 {% block title %}
 Help Desk
 {% endblock %}
 </title>
-
 <script>
     // Apply saved theme before first paint to avoid a light->dark flash.
     (function () {
@@ -23,12 +18,9 @@ Help Desk
         }
     })();
 </script>
-
+<link rel="stylesheet" href="/static/css/dashboard.css?v=4">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
-
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=4">
 <style>
     .profile-wrapper, .notif-wrapper{
         position:relative;
@@ -57,15 +49,6 @@ Help Desk
         pointer-events:auto;
     }
 
-    .profile-popup{
-        width:300px;
-        background:#fff;
-        border-radius:22px;
-        box-shadow:0 20px 50px rgba(27,33,64,.25);
-        overflow:hidden;
-    }
-
-    /* ---------- Notification card ---------- */
     .notif-popup{
         top:52px;
         width:340px;
@@ -140,11 +123,6 @@ Help Desk
         margin-top:1px;
     }
 
-    .notif-item-body{
-        flex:1;
-        min-width:0;
-    }
-
     .notif-item p{
         font-size:.83rem;
         margin:0 0 3px;
@@ -158,20 +136,8 @@ Help Desk
         font-size:.7rem;
     }
 
-    .notif-dot{
-        width:8px;
-        height:8px;
-        border-radius:50%;
-        margin-top:6px;
-        flex-shrink:0;
-        background:transparent;
-    }
-
     .notif-item.unread{
         background:rgba(241,120,7,.04);
-    }
-    .notif-item.unread .notif-dot{
-        background:#f17807;
     }
     .notif-item.unread p{
         font-weight:700;
@@ -193,109 +159,8 @@ Help Desk
         margin-bottom:10px;
         color:#f17807;
     }
-     .search-box-wrapper{
-    position:relative;
-    width:100%;
-}
-
-.search-dropdown{
-    position:absolute;
-    top:calc(100% + 10px);
-    left:0;
-    right:0;
-    background:#fff;
-    border-radius:20px;
-    box-shadow:0 20px 50px rgba(27,33,64,.25);
-    overflow:hidden;
-    z-index:10000;
-    display:none;
-}
-
-.search-dropdown.show{
-    display:block;
-}
-
-.search-dropdown-list{
-    max-height:380px;
-    overflow-y:auto;
-}
-
-.search-result-item{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:14px 20px;
-    text-decoration:none !important;
-    color:#1b2140 !important;
-    border-bottom:1px solid #f6f6f8;
-    transition:.15s;
-}
-.search-result-item:last-child{
-    border-bottom:none;
-}
-.search-result-item:hover,
-.search-result-item.active{
-    background:rgba(241,120,7,.05);
-}
-
-.search-result-icon{
-    width:34px;
-    height:34px;
-    border-radius:10px;
-    background:rgba(241,120,7,.1);
-    color:#f17807;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:.9rem;
-    flex-shrink:0;
-}
-
-.search-result-main{
-    flex:1;
-    min-width:0;
-}
-.search-result-main p{
-    margin:0 0 3px;
-    font-size:.83rem;
-    font-weight:600;
-    line-height:1.4;
-    color:#1b2140;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-.search-result-main small{
-    color:rgba(27,33,64,.55);
-    font-size:.7rem;
-}
-
-.search-result-status{
-    flex-shrink:0;
-    font-size:.68rem;
-    font-weight:700;
-    padding:3px 10px;
-    border-radius:999px;
-    background:#f17807;
-    color:#fff;
-    white-space:nowrap;
-}
-
-.search-dropdown-empty{
-    text-align:center;
-    padding:40px 20px;
-    color:rgba(27,33,64,.55);
-    font-size:.85rem;
-}
-.search-dropdown-empty i{
-    display:block;
-    font-size:1.8rem;
-    margin-bottom:10px;
-    color:#f17807;
-}
 </style>
 </head>
-
 <body
     data-notif-poll-url="{% url 'notifications_latest' %}"
     data-notif-sound-url="{% static 'sounds/notify.wav' %}"
@@ -304,49 +169,21 @@ Help Desk
 >
 
 <!-- Animated Background -->
-
 <div class="fluid-bg"></div>
-
 <div class="blob blob1"></div>
 <div class="blob blob2"></div>
 <div class="blob blob3"></div>
 <div class="blob blob4"></div>
 
 <!-- TOPBAR -->
-
 <header class="topbar">
-
     <div class="topbar-left">
-
         <img src="{% static 'images/NKMBV-37.png' %}" class="nav-logo">
-
         <div>
-
-            <h5>NKMBV Help Desk</h5>
-
-            <small>IT Support Portal</small>
-
+            <h5>NKMB Help Desk</h5>
+            <small>Admin Console</small>
         </div>
-
     </div>
-
-    <div class="topbar-center">
-
-         <div class="search-box-wrapper">
-    <div class="search-box">
-        <i class="bi bi-search"></i>
-        <input
-            type="text"
-            id="ticketSearchInput"
-            autocomplete="off"
-            placeholder="Search by ticket #, title, or requester...">
-    </div>
-
-    <div id="searchDropdown" class="search-dropdown">
-        <div class="search-dropdown-list" id="searchDropdownList"></div>
-    </div>
-    </div>
-
     <div class="topbar-right">
 
         <button
@@ -362,10 +199,8 @@ Help Desk
         <div class="notif-wrapper">
 
             <div id="notifButton" class="icon-btn" onclick="togglePopup('notifPopup', event)">
-
                 <i class="bi bi-bell"></i>
                 {% if unread_notifications_count %}<span class="notification-dot"></span>{% endif %}
-
             </div>
 
             <div id="notifPopup" class="notif-popup">
@@ -391,7 +226,7 @@ Help Desk
                         </div>
                     </a>
                     {% empty %}
-                    <div class="empty-state">
+                    <div class="notif-empty">
                         <i class="bi bi-bell-slash"></i>
                         No notifications yet.
                     </div>
@@ -403,177 +238,82 @@ Help Desk
 
         </div>
 
-        <div class="profile-wrapper">
-
-            <div id="profileButton" class="profile-button" onclick="togglePopup('profilePopup', event)">
-
-                <img
-                    src="{% static 'images/default-avatar.png' %}"
-                    class="profile-avatar"
-                >
-
-                <div>
-
-                    <strong>
-
-                        {{ request.user.first_name }}
-                        {{ request.user.last_name }}
-
-                    </strong>
-
-                    <small>
-
-                        {{ request.user.role }}
-
-                    </small>
-
-                </div>
-
-            </div>
-
-            <div id="profilePopup" class="profile-popup">
-
-                <div class="profile-popup-banner"></div>
-
-                <div class="profile-popup-identity">
-
-                    <img
-                        src="{% static 'images/default-avatar.png' %}"
-                        class="popup-avatar"
-                    >
-
-                    <h5>
-
-                        {{ request.user.first_name }}
-                        {{ request.user.last_name }}
-
-                    </h5>
-
-                    <small>{{ request.user.email }}</small>
-
-                    <div class="profile-role-chip">{{ request.user.role }}</div>
-
-                </div>
-
-                
-
-               
-
-                    
-
-                    
-
-                    <div class="profile-popup-divider"></div>
-
-                    <a href="{% url 'logout' %}" class="menu-item-logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
+        <span class="me-3">{{ request.user.get_full_name|default:request.user.username }}</span>
+        <a href="{% url 'logout' %}" class="glass-button glass-button-ghost">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+        </a>
     </div>
-
 </header>
 
 <div class="dashboard-wrapper">
 
     <!-- Sidebar -->
-
     <aside class="sidebar">
-
-        <div class="sidebar-header">
-
-            
-            <h4>
-
-                {{ request.user.first_name }}
-
-            </h4>
-
-            <p>
-
-                {{ request.user.role }}
-
-            </p>
-
-        </div>
 
         <ul class="sidebar-menu">
 
             <li>
-
-                <a href="{% url 'dashboard' %}" class="active">
-
+                <a href="{% url 'admin_dashboard' %}" class="{% block nav_dashboard %}{% endblock %}">
                     <i class="bi bi-grid-fill"></i>
-
                     <span>Dashboard</span>
-
                 </a>
-
-            </li>
-
-            
-
-            <li>
-
-                <a href="{% url 'create_ticket' %}">
-    <i class="bi bi-plus-circle-fill"></i>
-    <span>Create Ticket</span>
-</a>
-
             </li>
 
             <li>
-
-                <a href="{% url 'ticket_history' %}">
-
-                    <i class="bi bi-clock-history"></i>
-
-                    <span>Ticket History</span>
-
+                <a href="{% url 'create_ticket' %}" class="{% block nav_create_ticket %}{% endblock %}">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Create Ticket</span>
                 </a>
-
             </li>
 
             <li>
-
-                <a href="{% url 'knowledge_base' %}">
-
-                    <i class="bi bi-book-half"></i>
-
-                    <span>Knowledge Base</span>
-
+                <a href="{% url 'ticket_history' %}" class="{% block nav_my_tickets %}{% endblock %}">
+                    <i class="bi bi-ticket-perforated-fill"></i>
+                    <span>My Tickets</span>
                 </a>
-
             </li>
 
             <li>
-
-                <a href="#">
-
-                    <i class="bi bi-person-fill"></i>
-
-                    <span>Profile</span>
-
+                <a href="{% url 'admin_task_list' %}" class="{% block nav_admin_tasks %}{% endblock %}">
+                    <i class="bi bi-clipboard-check-fill"></i>
+                    <span>IT Tasks</span>
                 </a>
-
             </li>
 
             <li>
+                <a href="{% url 'admin_task_create' %}" class="{% block nav_admin_task_create %}{% endblock %}">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Assign Task</span>
+                </a>
+            </li>
 
+            <li>
+                <a href="{% url 'unassigned_queue' %}" class="{% block nav_unassigned %}{% endblock %}">
+                    <i class="bi bi-inbox-fill"></i>
+                    <span>Unassigned Tickets</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'all_tickets' %}" class="{% block nav_all_tickets %}{% endblock %}">
+                    <i class="bi bi-ticket-detailed-fill"></i>
+                    <span>All Tickets</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/admin/">
+                    <i class="bi bi-gear-fill"></i>
+                    <span>Django Admin</span>
+                </a>
+            </li>
+
+            <li>
                 <a href="{% url 'logout' %}">
-
                     <i class="bi bi-box-arrow-right"></i>
-
                     <span>Logout</span>
-
                 </a>
-
             </li>
 
         </ul>
@@ -581,13 +321,15 @@ Help Desk
     </aside>
 
     <!-- Main -->
-
     <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success mb-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
 
         {% block content %}
-
         {% endblock %}
-
     </main>
 
 </div>
@@ -596,33 +338,21 @@ Help Desk
 <script src="{% static 'js/notifications-live.js' %}?v=1"></script>
 
 <script>
-    // Generic popup toggle — used by both the notification bell and profile avatar.
-    // Closes any other open popup first, so only one card is visible at a time.
     function togglePopup(popupId, e) {
         e.stopPropagation();
 
         var popup = document.getElementById(popupId);
-        if (!popup) {
-            console.error(popupId + " element not found in DOM");
-            return;
-        }
+        if (!popup) return;
 
         var willOpen = !popup.classList.contains("show");
 
-        // close all popups first
         document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (p) {
             p.classList.remove("show");
-            p.style.opacity = "0";
-            p.style.visibility = "hidden";
         });
 
         if (willOpen) {
             popup.classList.add("show");
-            popup.style.opacity = "1";
-            popup.style.visibility = "visible";
-            popup.style.transform = "translateY(0)";
 
-            // mark notifications as read once the bell is opened
             if (popupId === "notifPopup") {
                 markNotificationsRead();
             }
@@ -658,8 +388,6 @@ Help Desk
     document.addEventListener("click", function () {
         document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (p) {
             p.classList.remove("show");
-            p.style.opacity = "0";
-            p.style.visibility = "hidden";
         });
     });
 
@@ -669,72 +397,8 @@ Help Desk
                 e.stopPropagation();
             });
         });
-        console.log("Popup scripts ready");
         syncThemeIcon();
     });
-     (function () {
-    var input = document.getElementById("ticketSearchInput");
-    var dropdown = document.getElementById("searchDropdown");
-    var list = document.getElementById("searchDropdownList");
-    var debounceTimer = null;
-
-    if (!input) return;
-
-    input.addEventListener("input", function () {
-        var query = input.value.trim();
-
-        clearTimeout(debounceTimer);
-
-        if (!query) {
-            dropdown.classList.remove("show");
-            return;
-        }
-
-        debounceTimer = setTimeout(function () {
-            fetch("{% url 'ticket_search_api' %}?q=" + encodeURIComponent(query))
-                .then(function (res) { return res.json(); })
-                .then(function (data) { renderResults(data.results); })
-                .catch(function (err) { console.error("Search failed:", err); });
-        }, 250);
-    });
-
-    function renderResults(results) {
-        list.innerHTML = "";
-
-        if (results.length === 0) {
-            list.innerHTML = '<div class="search-dropdown-empty">No tickets found.</div>';
-            dropdown.classList.add("show");
-            return;
-        }
-
-        results.forEach(function (ticket) {
-            var a = document.createElement("a");
-            a.href = ticket.url;
-            a.className = "search-result-item";
-            a.innerHTML =
-                '<div class="search-result-main">' +
-                    '<p>#' + ticket.id + " — " + ticket.title + "</p>" +
-                    "<small>" + ticket.requester + "</small>" +
-                "</div>" +
-                '<span class="search-result-status">' + ticket.status + "</span>";
-            list.appendChild(a);
-        });
-
-        dropdown.classList.add("show");
-    }
-
-    document.addEventListener("click", function (e) {
-        if (!dropdown.contains(e.target) && e.target !== input) {
-            dropdown.classList.remove("show");
-        }
-    });
-
-    input.addEventListener("focus", function () {
-        if (list.innerHTML.trim() !== "") {
-            dropdown.classList.add("show");
-        }
-    });
-})();
 
     // ---------- Dark / light mode toggle ----------
     function syncThemeIcon() {
@@ -761,7 +425,5 @@ Help Desk
 
     syncThemeIcon();
 </script>
-
 </body>
-
 </html>

@@ -1,0 +1,63 @@
+{% extends 'base_technician_dashboard .html' %}
+
+{% block title %}
+IT Tasks
+{% endblock %}
+
+{% block nav_it_tasks %}active{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h1>IT Tasks</h1>
+        <p>Internal tasks handed to you directly by the admin — separate from employee tickets.</p>
+    </div>
+</div>
+
+<div class="filter-tabs">
+    <a href="{% url 'technician_tasks' %}" class="filter-tab {% if not status_filter %}active{% endif %}">All</a>
+    {% for value, label in status_choices %}
+    <a href="?status={{ value }}" class="filter-tab {% if status_filter == value %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="glass-card panel">
+
+    {% for task in tasks %}
+    <div class="queue-row">
+        <div class="queue-main">
+            <a href="{% url 'technician_task_detail' task.pk %}">{{ task.title }}</a>
+            <div class="queue-meta">
+                Assigned by {{ task.assigned_by.get_full_name|default:task.assigned_by.username }}
+                · {{ task.created_at|timesince }} ago
+                {% if task.due_date %} · due {{ task.due_date }}{% endif %}
+            </div>
+            {% if task.description %}
+            <div class="queue-meta">{{ task.description }}</div>
+            {% endif %}
+        </div>
+        <span class="priority-badge {{ task.priority }}">{{ task.get_priority_display }}</span>
+        <span class="status-badge {{ task.status }}">{{ task.get_status_display }}</span>
+        <div class="queue-actions">
+            <form method="post" action="{% url 'update_task_status' task.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'technician_tasks' %}{% if status_filter %}?status={{ status_filter }}{% endif %}">
+                <select name="status" class="status-select" onchange="this.form.submit()">
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if task.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="bi bi-clipboard-check"></i>
+        {% if status_filter %}No tasks with this status.{% else %}No IT tasks assigned to you right now.{% endif %}
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}
