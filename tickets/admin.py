@@ -188,8 +188,52 @@ class TicketAdmin(admin.ModelAdmin):
                 staff_member_required(technician_report_export_view),
                 name="ticket_technician_report_export",
             ),
+            path(
+                "download-report/",
+                self.admin_site.admin_view(self.download_report_view),
+                name="ticket_download_report",
+            ),
         ]
         return custom_urls + urls
+
+    def download_report_view(self, request):
+        """Export the currently filtered/searched ticket list (as shown in
+        the admin change list) to CSV."""
+        if not _is_admin(request.user):
+            return redirect("admin:index")
+
+        cl = self.get_changelist_instance(request)
+        queryset = cl.get_queryset(request)
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="all_tickets_report.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            "ID",
+            "Title",
+            "Category",
+            "Priority",
+            "Status",
+            "Department",
+            "Created By",
+            "Assigned To",
+            "Created At",
+        ])
+        for ticket in queryset:
+            writer.writerow([
+                ticket.id,
+                ticket.title,
+                ticket.category,
+                ticket.priority,
+                ticket.status,
+                ticket.department,
+                ticket.created_by.username if ticket.created_by else "",
+                ticket.assigned_to.username if ticket.assigned_to else "",
+                ticket.created_at.strftime("%Y-%m-%d %H:%M"),
+            ])
+
+        return response
 
     def _bulk_assign(self, request, queryset, username):
 

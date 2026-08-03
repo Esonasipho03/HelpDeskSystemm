@@ -29,6 +29,21 @@ path(
     views.all_tickets,
     name="all_tickets",
 ),
+path(
+    "all/export/",
+    views.all_tickets_export,
+    name="all_tickets_export",
+),
+path(
+    "technician-report/",
+    views.technician_report,
+    name="technician_report",
+),
+path(
+    "technician-report/export/",
+    views.technician_report_export,
+    name="technician_report_export",
+),
     path(
     "technician/tickets/<int:pk>/",
     views.technician_ticket_detail,

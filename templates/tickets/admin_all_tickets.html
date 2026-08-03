@@ -13,6 +13,10 @@ All Tickets
         <h1>All Tickets</h1>
         <p>Every support request in the system, across all technicians.</p>
     </div>
+    <a href="{% url 'all_tickets_export' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
+       class="glass-button">
+        <i class="bi bi-download"></i> All Tickets Report
+    </a>
 </div>
 
 <div class="glass-card mb-4 p-3">

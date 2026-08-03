@@ -1,8 +1,10 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db.models import Q
+from django.db.models import Avg, Count, DurationField, ExpressionWrapper, F, Q
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -440,6 +442,150 @@ def all_tickets(request):
         return render(request, "tickets/admin_all_tickets.html", context)
 
     return render(request, "tickets/all_tickets.html", context)
+
+
+@login_required
+def all_tickets_export(request):
+    """CSV export of the All Tickets list, admin-only, respecting whatever
+    search/status/priority filters are currently applied."""
+    if not _is_admin(request.user):
+        return redirect("all_tickets")
+
+    tickets = Ticket.objects.all().order_by("-created_at")
+
+    q = request.GET.get("search") or request.GET.get("q")
+    status = request.GET.get("status")
+    priority = request.GET.get("priority")
+
+    if q:
+        tickets = tickets.filter(title__icontains=q)
+
+    if status:
+        tickets = tickets.filter(status=status)
+
+    if priority:
+        tickets = tickets.filter(priority=priority)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="all_tickets_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "ID",
+        "Employee",
+        "Issue",
+        "Category",
+        "Status",
+        "Priority",
+        "Assigned To",
+        "Created At",
+    ])
+    for ticket in tickets:
+        writer.writerow([
+            ticket.id,
+            ticket.created_by.username if ticket.created_by else "",
+            ticket.title,
+            ticket.get_category_display(),
+            ticket.get_status_display(),
+            ticket.get_priority_display(),
+            ticket.assigned_to.username if ticket.assigned_to else "Unassigned",
+            ticket.created_at.strftime("%Y-%m-%d %H:%M"),
+        ])
+
+    return response
+
+
+def _technician_report_stats(start_date=None, end_date=None):
+    """Per-technician ticket stats, optionally filtered by created_at date
+    range. Used to measure each technician's workload and how efficiently
+    they're resolving tickets."""
+
+    qs = Ticket.objects.filter(assigned_to__isnull=False)
+
+    if start_date:
+        qs = qs.filter(created_at__date__gte=start_date)
+    if end_date:
+        qs = qs.filter(created_at__date__lte=end_date)
+
+    resolution_time = ExpressionWrapper(
+        F("resolved_at") - F("created_at"),
+        output_field=DurationField(),
+    )
+
+    stats = (
+        qs.values("assigned_to__username")
+        .annotate(
+            total_tickets=Count("id"),
+            resolved_tickets=Count(
+                "id",
+                filter=Q(status__in=[TicketStatus.RESOLVED]),
+            ),
+            avg_resolution_time=Avg(
+                resolution_time,
+                filter=Q(resolved_at__isnull=False),
+            ),
+        )
+        .order_by("-total_tickets")
+    )
+
+    rows = []
+    for row in stats:
+        avg_duration = row["avg_resolution_time"]
+        row["avg_resolution_time"] = (
+            f"{max(avg_duration.total_seconds(), 0) / 3600:.1f} hrs" if avg_duration else None
+        )
+        row["resolution_rate"] = (
+            round(row["resolved_tickets"] / row["total_tickets"] * 100)
+            if row["total_tickets"] else 0
+        )
+        rows.append(row)
+
+    return rows
+
+
+@login_required
+def technician_report(request):
+    """Admin-only page (on the custom dashboard, not Django admin) showing
+    each technician's ticket volume, resolution count, and average
+    resolution time so admins can gauge efficiency at a glance."""
+    if not _is_admin(request.user):
+        return redirect("all_tickets")
+
+    start_date = request.GET.get("start_date") or None
+    end_date = request.GET.get("end_date") or None
+    stats = _technician_report_stats(start_date, end_date)
+
+    context = {
+        "stats": stats,
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+    return render(request, "tickets/technician_report.html", context)
+
+
+@login_required
+def technician_report_export(request):
+    if not _is_admin(request.user):
+        return redirect("all_tickets")
+
+    start_date = request.GET.get("start_date") or None
+    end_date = request.GET.get("end_date") or None
+    stats = _technician_report_stats(start_date, end_date)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="technician_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Technician", "Total Tickets", "Resolved Tickets", "Avg Resolution Time"])
+    for row in stats:
+        writer.writerow([
+            row["assigned_to__username"],
+            row["total_tickets"],
+            row["resolved_tickets"],
+            row["avg_resolution_time"] or "-",
+        ])
+
+    return response
 
 
 @login_required

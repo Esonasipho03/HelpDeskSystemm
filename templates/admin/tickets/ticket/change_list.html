@@ -1,6 +1,7 @@
 {# templates/admin/tickets/ticket_changelist.html #}
 {% extends "admin/change_list.html" %}
 {% block object-tools-items %}
+  <li><a href="download-report/{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">Download Report</a></li>
   <li><a href="technician-report/">Technician Report</a></li>
   {{ block.super }}
 {% endblock %}
