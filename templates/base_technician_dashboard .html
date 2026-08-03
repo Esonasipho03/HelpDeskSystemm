@@ -2,6 +2,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
+<link rel="icon" type="image/x-icon" href="{% static 'favicon/favicon.ico' %}">
+<link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
+<title>NSC Helpdesk</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>
@@ -395,70 +401,6 @@ Help Desk
     </div>
 
 </div>
-        
-        <div class="profile-wrapper">
-
-            <div id="profileButton" class="profile-button" onclick="togglePopup('profilePopup', event)">
-
-                <img
-                    src="{% static 'images/default-avatar.png' %}"
-                    class="profile-avatar"
-                >
-
-                <div>
-
-                    <strong>{{ request.user.get_full_name }}</strong>
-
-                    <small>
-                        {{ request.user.role }}
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <div id="profilePopup" class="profile-popup">
-
-                <div class="profile-popup-banner"></div>
-
-                <div class="profile-popup-identity">
-
-                    <img
-                        src="{% static 'images/default-avatar.png' %}"
-                        class="popup-avatar"
-                    >
-
-                    <h5>{{ request.user.get_full_name }}</h5>
-                    <small>{{ request.user.email }}</small>
-                    <div class="profile-role-chip">{{ request.user.role }}</div>
-
-                </div>
-
-               
-
-                <div class="profile-popup-menu">
-
-                    
-
-                    
-
-                   
-
-                    <div class="profile-popup-divider"></div>
-
-                    <a href="{% url 'logout' %}" class="menu-item-logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-
-
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
     </div>
 </header>
 
