@@ -420,6 +420,7 @@ def all_tickets(request):
     q = request.GET.get("search") or request.GET.get("q")
     status = request.GET.get("status")
     priority = request.GET.get("priority")
+    technician = request.GET.get("technician")
 
     if q:
         tickets = tickets.filter(
@@ -432,10 +433,15 @@ def all_tickets(request):
     if priority:
         tickets = tickets.filter(priority=priority)
 
+    if technician:
+        tickets = tickets.filter(assigned_to_id=technician)
+
     context = {
         "tickets": tickets,
         "status_choices": TicketStatus.choices,
         "priority_choices": TicketPriority.choices,
+        "technicians": User.objects.filter(role="TECHNICIAN").order_by("username"),
+        "selected_technician": technician,
     }
 
     if _is_admin(request.user):
@@ -444,10 +450,24 @@ def all_tickets(request):
     return render(request, "tickets/all_tickets.html", context)
 
 
+def _csv_datetime(value):
+    """Format an aware datetime for CSV export as plain readable text.
+
+    Leading apostrophe tells Excel to treat the cell as literal text
+    instead of auto-detecting it as a date/number - Excel strips the
+    apostrophe on display, so this avoids the "column too narrow" #####
+    that shows up when Excel reformats an auto-detected date into a
+    wider representation than the column currently allows.
+    """
+    if not value:
+        return ""
+    return "'" + timezone.localtime(value).strftime("%Y-%m-%d %H:%M")
+
+
 @login_required
 def all_tickets_export(request):
     """CSV export of the All Tickets list, admin-only, respecting whatever
-    search/status/priority filters are currently applied."""
+    search/status/priority/technician filters are currently applied."""
     if not _is_admin(request.user):
         return redirect("all_tickets")
 
@@ -456,6 +476,7 @@ def all_tickets_export(request):
     q = request.GET.get("search") or request.GET.get("q")
     status = request.GET.get("status")
     priority = request.GET.get("priority")
+    technician_id = request.GET.get("technician")
 
     if q:
         tickets = tickets.filter(title__icontains=q)
@@ -466,30 +487,60 @@ def all_tickets_export(request):
     if priority:
         tickets = tickets.filter(priority=priority)
 
+    technician_user = None
+    if technician_id:
+        tickets = tickets.filter(assigned_to_id=technician_id)
+        technician_user = User.objects.filter(pk=technician_id).first()
+
+    filename = "all_tickets_report.csv"
+    if technician_user:
+        # e.g. "tickets_report_jsmith.csv"
+        safe_username = "".join(
+            c if c.isalnum() else "_" for c in technician_user.username
+        )
+        filename = f"tickets_report_{safe_username}.csv"
+
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="all_tickets_report.csv"'
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     writer = csv.writer(response)
     writer.writerow([
         "ID",
         "Employee",
         "Issue",
+        "Description",
         "Category",
+        "Department",
         "Status",
         "Priority",
         "Assigned To",
+        "Resolution",
+        "Satisfaction Rating",
         "Created At",
+        "Updated At",
+        "Resolved At",
     ])
-    for ticket in tickets:
+    for ticket in tickets.select_related("created_by", "assigned_to"):
         writer.writerow([
             ticket.id,
             ticket.created_by.username if ticket.created_by else "",
             ticket.title,
+            ticket.description,
             ticket.get_category_display(),
+            ticket.get_department_display(),
             ticket.get_status_display(),
             ticket.get_priority_display(),
             ticket.assigned_to.username if ticket.assigned_to else "Unassigned",
-            ticket.created_at.strftime("%Y-%m-%d %H:%M"),
+            ticket.resolution,
+            ticket.satisfaction_rating if ticket.satisfaction_rating is not None else "",
+            # created_at/updated_at/resolved_at are stored in UTC (USE_TZ=True) -
+            # _csv_datetime() converts to settings.TIME_ZONE
+            # (Africa/Johannesburg) before formatting, so the CSV matches
+            # what's shown on-screen, and forces Excel to treat it as text
+            # so it doesn't collapse into ##### in a narrow column.
+            _csv_datetime(ticket.created_at),
+            _csv_datetime(ticket.updated_at),
+            _csv_datetime(ticket.resolved_at),
         ])
 
     return response
@@ -812,16 +863,12 @@ def update_ticket_status(request, pk):
         new_status = request.POST.get("status")
         resolution = request.POST.get("resolution")
 
-        if new_status == TicketStatus.RESOLVED:
+        if new_status == TicketStatus.RESOLVED and resolution:
+            ticket.resolution = resolution
 
-            if resolution:
-                ticket.resolution = resolution
-
-            ticket.resolved_at = timezone.now()
-
-        elif new_status == TicketStatus.RESOLVED:
-            ticket.closed_at = timezone.now()
-
+        # resolved_at is now handled in Ticket.save() based on the status
+        # transition, so it's set consistently regardless of which page
+        # or action changed the status.
         ticket.status = new_status
         ticket.save()
 
@@ -843,13 +890,6 @@ def update_ticket_status(request, pk):
             create_notification(
                 ticket.created_by,
                 f"Ticket #{ticket.id} was resolved. Let us know how we did!",
-                ticket=ticket,
-                audience="employee",
-            )
-        elif new_status == TicketStatus.RESOLVED:
-            create_notification(
-                ticket.created_by,
-                f"Ticket #{ticket.id} has been closed.",
                 ticket=ticket,
                 audience="employee",
             )

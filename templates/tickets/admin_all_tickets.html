@@ -25,7 +25,7 @@ All Tickets
 
 <div class="row">
 
-<div class="col-md-4">
+<div class="col-md-3">
 <input
     type="text"
     name="search"
@@ -34,7 +34,7 @@ All Tickets
     value="{{ request.GET.search }}">
 </div>
 
-<div class="col-md-3">
+<div class="col-md-2">
 <select name="status" class="form-select">
     <option value="">All Statuses</option>
     {% for value, label in status_choices %}
@@ -43,11 +43,20 @@ All Tickets
 </select>
 </div>
 
-<div class="col-md-3">
+<div class="col-md-2">
 <select name="priority" class="form-select">
     <option value="">All Priorities</option>
     {% for value, label in priority_choices %}
     <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+</select>
+</div>
+
+<div class="col-md-3">
+<select name="technician" class="form-select">
+    <option value="">All Technicians</option>
+    {% for tech in technicians %}
+    <option value="{{ tech.id }}" {% if selected_technician == tech.id|stringformat:"s" %}selected{% endif %}>{{ tech.username }}</option>
     {% endfor %}
 </select>
 </div>

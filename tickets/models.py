@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 
 class TicketStatus(models.TextChoices):
@@ -164,6 +165,32 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"#{self.id} - {self.title}"
+
+    def save(self, *args, **kwargs):
+        # Keep resolved_at in sync with status no matter how the change
+        # comes in - the technician's status dropdown, the ticket detail
+        # page, a Django Admin edit, or a bulk action. Relying on any one
+        # call site to remember to set it is how it ends up blank.
+        old_status = None
+        if self.pk:
+            old_status = (
+                Ticket.objects.filter(pk=self.pk)
+                .values_list("status", flat=True)
+                .first()
+            )
+
+        status_changed = old_status != self.status
+
+        if status_changed:
+            if self.status == TicketStatus.RESOLVED:
+                if not self.resolved_at:
+                    self.resolved_at = timezone.now()
+            elif old_status == TicketStatus.RESOLVED:
+                # Reopened - no longer resolved, so it shouldn't still
+                # count as resolved for reporting.
+                self.resolved_at = None
+
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse(
