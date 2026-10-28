@@ -1,0 +1,84 @@
+{% extends "base_admin_dashboard.html" %}
+
+{% block title %}
+Technician Report
+{% endblock %}
+
+{% block nav_technician_report %}active{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h1>Technician Report</h1>
+        <p>Measure each technician's workload and resolution efficiency.</p>
+    </div>
+    <a href="{% url 'technician_report_export' %}?{{ request.GET.urlencode }}" class="glass-button">
+        <i class="bi bi-download"></i> Export as CSV
+    </a>
+</div>
+
+<div class="glass-card mb-4 p-3">
+
+<form method="get">
+
+<div class="row align-items-end">
+
+<div class="col-md-3">
+    <label class="form-label" for="start_date">From</label>
+    <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date|default:'' }}">
+</div>
+
+<div class="col-md-3">
+    <label class="form-label" for="end_date">To</label>
+    <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date|default:'' }}">
+</div>
+
+<div class="col-md-3 d-flex gap-2">
+    <button type="submit" class="btn btn-warning">Filter</button>
+    <a href="{% url 'technician_report' %}" class="btn btn-outline-secondary">Reset</a>
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+<div class="glass-card">
+
+<table class="report-table">
+
+<thead>
+<tr>
+    <th>Technician</th>
+    <th>Total Tickets</th>
+    <th>Resolved Tickets</th>
+    <th>Resolution Rate</th>
+    <th>Avg Resolution Time</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for row in stats %}
+<tr>
+    <td>{{ row.assigned_to__username }}</td>
+    <td>{{ row.total_tickets }}</td>
+    <td>{{ row.resolved_tickets }}</td>
+    <td><span class="completion-badge">{{ row.resolution_rate }}%</span></td>
+    <td>{{ row.avg_resolution_time|default:"—" }}</td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="5">No data available for this period.</td>
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

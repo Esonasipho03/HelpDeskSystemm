@@ -1,0 +1,64 @@
+{# templates/admin/tickets/technician_report.html #}
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/changelists.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:tickets_ticket_changelist' %}">Tickets</a>
+    &rsaquo; Technician Report
+  </div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+
+  <h1>Technician Report</h1>
+
+  <form method="get" style="margin-bottom: 15px;">
+    <label for="start_date">From:</label>
+    <input type="date" id="start_date" name="start_date" value="{{ start_date|default:'' }}">
+    <label for="end_date">To:</label>
+    <input type="date" id="end_date" name="end_date" value="{{ end_date|default:'' }}">
+    <input type="submit" value="Filter" class="button">
+    <a href="{% url 'admin:ticket_technician_report' %}" class="button">Reset</a>
+  </form>
+
+  <p>
+    <a href="{% url 'admin:ticket_technician_report_export' %}?{{ request.GET.urlencode }}" class="button">
+      Export as CSV
+    </a>
+  </p>
+
+  <table id="result_list">
+    <thead>
+      <tr>
+        <th scope="col">Technician</th>
+        <th scope="col">Total Tickets</th>
+        <th scope="col">Resolved Tickets</th>
+        <th scope="col">Avg Resolution Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in stats %}
+      <tr class="{% cycle 'row1' 'row2' %}">
+        <td>{{ row.assigned_to__username }}</td>
+        <td>{{ row.total_tickets }}</td>
+        <td>{{ row.resolved_tickets }}</td>
+        <td>{{ row.avg_resolution_time|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4">No data available for this period.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock %}

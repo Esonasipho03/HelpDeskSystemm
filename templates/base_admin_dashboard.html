@@ -1,0 +1,430 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   
+<link rel="icon" type="image/x-icon" href="{% static 'favicon/favicon.ico' %}">
+<link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}NSC Helpdesk{% endblock %}</title>
+<script>
+    // Apply saved theme before first paint to avoid a light->dark flash.
+    (function () {
+        var saved = localStorage.getItem("theme");
+        if (saved === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    })();
+</script>
+<link rel="stylesheet" href="/static/css/dashboard.css?v=5">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    .profile-wrapper, .notif-wrapper{
+        position:relative;
+        display:inline-block;
+    }
+
+    .profile-popup, .notif-popup{
+        position:absolute;
+        top:60px;
+        right:0;
+        z-index:10000;
+        opacity:0;
+        visibility:hidden;
+        transform:translateY(-10px);
+        transition:opacity .18s ease,
+                   transform .18s ease,
+                   visibility .18s;
+        pointer-events:none;
+    }
+
+    .profile-popup.show,
+    .notif-popup.show{
+        opacity:1;
+        visibility:visible;
+        transform:translateY(0);
+        pointer-events:auto;
+    }
+
+    .notif-popup{
+        top:52px;
+        width:340px;
+        max-height:440px;
+        background:#fff;
+        border-radius:20px;
+        box-shadow:0 20px 50px rgba(27,33,64,.25);
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+    }
+
+    .notif-popup-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:18px 20px 14px;
+        border-bottom:1px solid #f0f0f3;
+        flex-shrink:0;
+    }
+
+    .notif-popup-header h5{
+        font-size:.95rem;
+        font-weight:700;
+        color:#1b2140;
+        margin:0;
+    }
+
+    .notif-unread-badge{
+        background:#f17807;
+        color:#fff;
+        font-size:.68rem;
+        font-weight:700;
+        padding:3px 10px;
+        border-radius:999px;
+        line-height:1.4;
+    }
+
+    .notif-list{
+        overflow-y:auto;
+        max-height:380px;
+    }
+
+    .notif-item{
+        display:flex;
+        align-items:flex-start;
+        gap:12px;
+        padding:14px 20px;
+        text-decoration:none !important;
+        color:#1b2140 !important;
+        border-bottom:1px solid #f6f6f8;
+        transition:.15s;
+    }
+    .notif-item:last-child{
+        border-bottom:none;
+    }
+    .notif-item:hover{
+        background:rgba(241,120,7,.05);
+    }
+
+    .notif-item-icon{
+        width:34px;
+        height:34px;
+        border-radius:10px;
+        background:rgba(241,120,7,.1);
+        color:#f17807;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:.9rem;
+        flex-shrink:0;
+        margin-top:1px;
+    }
+
+    .notif-item p{
+        font-size:.83rem;
+        margin:0 0 3px;
+        line-height:1.4;
+        color:#1b2140;
+        font-weight:500;
+    }
+
+    .notif-item small{
+        color:rgba(27,33,64,.55);
+        font-size:.7rem;
+    }
+
+    .notif-item.unread{
+        background:rgba(241,120,7,.04);
+    }
+    .notif-item.unread p{
+        font-weight:700;
+    }
+    .notif-item.unread .notif-item-icon{
+        background:#f17807;
+        color:#fff;
+    }
+
+    .notif-empty{
+        text-align:center;
+        padding:40px 20px;
+        color:rgba(27,33,64,.55);
+        font-size:.85rem;
+    }
+    .notif-empty i{
+        display:block;
+        font-size:1.8rem;
+        margin-bottom:10px;
+        color:#f17807;
+    }
+</style>
+</head>
+<body
+    data-notif-poll-url="{% url 'notifications_latest' %}"
+    data-notif-sound-url="{% static 'sounds/notify.wav' %}"
+    data-notif-icon-url="{% static 'images/NKMBV-37.png' %}"
+    data-notif-last-id="{{ notifications.0.id|default:0 }}"
+>
+
+<!-- Animated Background -->
+<div class="fluid-bg"></div>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+<div class="blob blob4"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <div class="topbar-left">
+        <img src="{% static 'images/NKMBV-37.png' %}" class="nav-logo">
+        <div>
+            <h5>NKMB Help Desk</h5>
+            <small>Admin Console</small>
+        </div>
+    </div>
+    <div class="topbar-right">
+
+        <button
+            id="themeToggleBtn"
+            class="icon-btn theme-toggle-btn"
+            type="button"
+            onclick="toggleTheme()"
+            aria-label="Toggle dark mode"
+        >
+            <i class="bi bi-moon-stars" id="themeToggleIcon"></i>
+        </button>
+
+        <div class="notif-wrapper">
+
+            <div id="notifButton" class="icon-btn" onclick="togglePopup('notifPopup', event)">
+                <i class="bi bi-bell"></i>
+                {% if unread_notifications_count %}<span class="notification-dot"></span>{% endif %}
+            </div>
+
+            <div id="notifPopup" class="notif-popup">
+
+                <div class="notif-popup-header">
+                    <h5>Notifications</h5>
+                    {% if unread_notifications_count %}
+                    <span class="notif-unread-badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="notif-list">
+
+                    {% for note in notifications %}
+                    <a
+                        href="{% if note.ticket %}{% url 'ticket_detail' note.ticket.pk %}{% else %}#{% endif %}"
+                        class="notif-item {% if not note.is_read %}unread{% endif %}"
+                    >
+                        <div class="notif-item-icon"></div>
+                        <div>
+                            <p>{{ note.message }}</p>
+                            <small>{{ note.created_at|timesince }} ago</small>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="notif-empty">
+                        <i class="bi bi-bell-slash"></i>
+                        No notifications yet.
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <span class="me-3">{{ request.user.get_full_name|default:request.user.username }}</span>
+        <a href="{% url 'logout' %}" class="glass-button glass-button-ghost">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+        </a>
+    </div>
+</header>
+
+<div class="dashboard-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <ul class="sidebar-menu">
+
+            <li>
+                <a href="{% url 'admin_dashboard' %}" class="{% block nav_dashboard %}{% endblock %}">
+                    <i class="bi bi-grid-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'create_ticket' %}" class="{% block nav_create_ticket %}{% endblock %}">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Create Ticket</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'ticket_history' %}" class="{% block nav_my_tickets %}{% endblock %}">
+                    <i class="bi bi-ticket-perforated-fill"></i>
+                    <span>My Tickets</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'admin_task_list' %}" class="{% block nav_admin_tasks %}{% endblock %}">
+                    <i class="bi bi-clipboard-check-fill"></i>
+                    <span>IT Tasks</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'admin_task_create' %}" class="{% block nav_admin_task_create %}{% endblock %}">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Assign Task</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'unassigned_queue' %}" class="{% block nav_unassigned %}{% endblock %}">
+                    <i class="bi bi-inbox-fill"></i>
+                    <span>Unassigned Tickets</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'all_tickets' %}" class="{% block nav_all_tickets %}{% endblock %}">
+                    <i class="bi bi-ticket-detailed-fill"></i>
+                    <span>All Tickets</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'technician_report' %}" class="{% block nav_technician_report %}{% endblock %}">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    <span>Technician Report</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+
+        </ul>
+
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success mb-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</div>
+
+<script src="{% static 'js/dashboard.js' %}?v=2"></script>
+<script src="{% static 'js/notifications-live.js' %}?v=1"></script>
+
+<script>
+    function togglePopup(popupId, e) {
+        e.stopPropagation();
+
+        var popup = document.getElementById(popupId);
+        if (!popup) return;
+
+        var willOpen = !popup.classList.contains("show");
+
+        document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (p) {
+            p.classList.remove("show");
+        });
+
+        if (willOpen) {
+            popup.classList.add("show");
+
+            if (popupId === "notifPopup") {
+                markNotificationsRead();
+            }
+        }
+    }
+
+    function markNotificationsRead() {
+        var dot = document.querySelector("#notifButton .notification-dot");
+        var badge = document.querySelector(".notif-unread-badge");
+        if (dot) dot.remove();
+        if (badge) badge.remove();
+        document.querySelectorAll(".notif-item.unread").forEach(function (item) {
+            item.classList.remove("unread");
+        });
+
+        fetch("{% url 'mark_notifications_read' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+        }).catch(function (err) {
+            console.error("Failed to mark notifications read:", err);
+        });
+    }
+
+    function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return "";
+    }
+
+    document.addEventListener("click", function () {
+        document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (p) {
+            p.classList.remove("show");
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".profile-popup, .notif-popup").forEach(function (popup) {
+            popup.addEventListener("click", function (e) {
+                e.stopPropagation();
+            });
+        });
+        syncThemeIcon();
+    });
+
+    // ---------- Dark / light mode toggle ----------
+    function syncThemeIcon() {
+        var icon = document.getElementById("themeToggleIcon");
+        if (!icon) return;
+        var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        icon.className = isDark ? "bi bi-sun" : "bi bi-moon-stars";
+    }
+
+    function toggleTheme() {
+        var root = document.documentElement;
+        var isDark = root.getAttribute("data-theme") === "dark";
+
+        if (isDark) {
+            root.removeAttribute("data-theme");
+            localStorage.setItem("theme", "light");
+        } else {
+            root.setAttribute("data-theme", "dark");
+            localStorage.setItem("theme", "dark");
+        }
+
+        syncThemeIcon();
+    }
+
+    syncThemeIcon();
+</script>
+</body>
+</html>
