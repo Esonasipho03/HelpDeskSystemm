@@ -1,0 +1,9 @@
+{% load static %}
+<link rel="manifest" href="{% url 'pwa_manifest' %}">
+<meta name="theme-color" content="#1b2140">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NKMB Help Desk">
+<link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/icons/icon-192.png' %}">
+<link rel="apple-touch-icon" href="{% static 'images/icons/apple-touch-icon.png' %}">
+<style>[data-pwa-install][hidden]{display:none !important}</style>

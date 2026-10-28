@@ -18,8 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    # PWA: installable app support (the service worker must live at the site root)
+    path("manifest.json", TemplateView.as_view(template_name="pwa/manifest.json",
+         content_type="application/manifest+json"), name="pwa_manifest"),
+    path("sw.js", TemplateView.as_view(template_name="pwa/sw.js",
+         content_type="application/javascript"), name="pwa_sw"),
+    path("offline/", TemplateView.as_view(template_name="pwa/offline.html"), name="pwa_offline"),
+
     path("admin/", admin.site.urls),
 
     path("accounts/", include("accounts.urls")),

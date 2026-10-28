@@ -1,0 +1,42 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Rate ticket{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h1>How was your support?</h1>
+        <p>Ticket #{{ ticket.pk }} &middot; {{ ticket.title }}</p>
+    </div>
+    <a href="{% url 'ticket_detail' ticket.pk %}" class="glass-button glass-button-ghost">
+        <i class="bi bi-arrow-left"></i>
+        Back to ticket
+    </a>
+</div>
+
+<div class="glass-card form-panel">
+    <form method="post">
+        {% csrf_token %}
+
+        <p style="margin:0 0 16px;color:var(--ink-soft);">
+            Choose a rating from 1 (poor) to 5 (excellent).
+        </p>
+
+        <div class="rate-options">
+            {{ form.satisfaction_rating }}
+        </div>
+        {% for error in form.satisfaction_rating.errors %}
+        <div class="form-error">{{ error }}</div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="glass-button">
+                <i class="bi bi-star-fill"></i>
+                Submit rating
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

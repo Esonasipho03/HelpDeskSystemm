@@ -184,6 +184,7 @@ Help Desk
         color:#f17807;
     }
 </style>
+{% include 'pwa/head.html' %}
 </head>
 
 <body>
@@ -351,6 +352,11 @@ Help Desk
                     <a href="#">
                         <i class="bi bi-shield-lock-fill"></i>
                         Change Password
+                    </a>
+
+                    <a href="#" data-pwa-install hidden>
+                        <i class="bi bi-download"></i>
+                        Install app
                     </a>
 
                     <div class="profile-popup-divider"></div>
@@ -561,6 +567,14 @@ Help Desk
         console.log("Popup scripts ready");
     });
 </script>
+
+<script>
+    window.NOTIF_SOUND_URL = "{% static 'sounds/notification.mp3' %}?v=2";
+    window.NOTIF_UNREAD = {{ unread_notifications_count|default:0 }};
+</script>
+<script src="{% static 'js/notification-sound.js' %}?v=1"></script>
+
+<script src="{% static 'js/pwa.js' %}?v=1"></script>
 
 </body>
 

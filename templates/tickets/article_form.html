@@ -1,0 +1,47 @@
+{% extends "base_technician_dashboard .html" %}
+
+{% block title %}{{ title|default:"Article" }}{% endblock %}
+{% block nav_kb %}active{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h1>{{ title|default:"Article" }}</h1>
+        <p>Write clear, step-by-step fixes that employees can follow without a ticket.</p>
+    </div>
+    <a href="{% url 'manage_articles' %}" class="glass-button glass-button-ghost">
+        <i class="bi bi-arrow-left"></i>
+        Back to articles
+    </a>
+</div>
+
+<div class="glass-card form-panel">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}
+            <div class="form-error">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <a href="{% url 'manage_articles' %}" class="glass-button glass-button-ghost">Cancel</a>
+            <button type="submit" class="glass-button">
+                <i class="bi bi-check2-circle"></i>
+                Save article
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
