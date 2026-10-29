@@ -36,6 +36,28 @@ ALLOWED_HOSTS = [
     ".onrender.com",
 ]
 
+# --- Running behind Render's HTTPS proxy -------------------------------------
+# Render terminates HTTPS and forwards plain HTTP to gunicorn. Without these,
+# Django thinks every request is insecure, and the login form's POST (whose
+# Origin is https://...) is rejected with "403 CSRF verification failed".
+ON_RENDER = os.environ.get("RENDER") == "true"
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
+_render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if _render_host:
+    ALLOWED_HOSTS.append(_render_host)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_render_host}")
+# Any custom domain: set CSRF_TRUSTED_ORIGINS=https://help.example.com (comma separated)
+CSRF_TRUSTED_ORIGINS += [
+    o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
+
+if ON_RENDER:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -57,6 +79,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'HelpDeskSystem.middleware.NoStoreForLoggedInPagesMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -146,3 +169,22 @@ LOGIN_URL = 'login'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+
+# --- Logging ------------------------------------------------------------------
+# With DEBUG=False Django prints nothing for a 500, so Render's Logs tab shows only
+# the status code. This sends the full traceback of every server error to stderr,
+# which Render captures.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {"format": "%(levelname)s %(asctime)s %(name)s: %(message)s"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "simple"},
+    },
+    "loggers": {
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+        "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+    },
+}
