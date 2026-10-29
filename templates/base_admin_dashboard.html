@@ -161,6 +161,7 @@
         color:#f17807;
     }
 </style>
+{% include 'pwa/head.html' %}
 </head>
 <body
     data-notif-poll-url="{% url 'notifications_latest' %}"
@@ -310,6 +311,13 @@
                 </a>
             </li>
 
+            <li data-pwa-install hidden>
+                <a href="#">
+                    <i class="bi bi-download"></i>
+                    <span>Install app</span>
+                </a>
+            </li>
+
             <li>
                 <a href="{% url 'logout' %}">
                     <i class="bi bi-box-arrow-right"></i>
@@ -337,6 +345,7 @@
 
 <script src="{% static 'js/dashboard.js' %}?v=2"></script>
 <script src="{% static 'js/notifications-live.js' %}?v=1"></script>
+<script src="{% static 'js/pwa.js' %}?v=1"></script>
 
 <script>
     function togglePopup(popupId, e) {

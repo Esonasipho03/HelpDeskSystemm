@@ -4,13 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login &middot; NKMB Help Desk</title>
+    <title>NSC Helpdesk</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
 
-{% include 'pwa/head.html' %}
-
+<link rel="icon" type="image/x-icon" href="{% static 'favicon/favicon.ico' %}">
+<link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <style>
 /* ==========================================================
    NKMB Help Desk — Login
@@ -279,7 +281,7 @@ body{
     border:1.5px solid #1b2140;background:#fff;color:#1b2140;font-weight:600;cursor:pointer;
 }
 .btn-install:hover{background:#f3f5fa}
-.btn-install[hidden]{display:none}
+
 .login-footer{
     text-align:center;
     font-size:.78rem;
@@ -300,6 +302,7 @@ body{
 }
 
     </style>
+{% include 'pwa/head.html' %}
 </head>
 <body>
 

@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    # PWA: installable app support (the service worker must live at the site root)
+    # Installable app support (the service worker must live at the site root)
     path("manifest.json", TemplateView.as_view(template_name="pwa/manifest.json",
          content_type="application/manifest+json"), name="pwa_manifest"),
     path("sw.js", TemplateView.as_view(template_name="pwa/sw.js",
@@ -30,7 +30,7 @@ urlpatterns = [
 
     path("admin/", admin.site.urls),
 
-    path("accounts/", include("accounts.urls")),
+    path("", include("accounts.urls")),
 
     path("dashboard/", include("dashboard.urls")),
     path("tickets/", include("tickets.urls")),
