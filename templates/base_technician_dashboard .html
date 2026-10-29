@@ -286,7 +286,7 @@
 </head>
 <body
     data-notif-poll-url="{% url 'notifications_latest' %}"
-    data-notif-sound-url="{% static 'sounds/notification.wav' %}"
+    data-notif-sound-url="{% static 'sounds/notify.wav' %}"
     data-notif-icon-url="{% static 'images/NKMBV-37.png' %}"
     data-notif-last-id="{{ notifications.0.id|default:0 }}"
 >
@@ -444,11 +444,6 @@
                     <a href="#">
                         <i class="bi bi-shield-lock-fill"></i>
                         Change Password
-                    </a>
-
-                    <a href="#" data-pwa-install hidden>
-                        <i class="bi bi-download"></i>
-                        Install app
                     </a>
 
                     <div class="profile-popup-divider"></div>
