@@ -333,3 +333,34 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message
+
+class ITTask(models.Model):
+    """Restored to match migration 0011 so the existing table is kept."""
+
+    PRIORITY_CHOICES = [('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')]
+    STATUS_CHOICES = [('Pending', 'Pending'), ('In Progress', 'In Progress'), ('Completed', 'Completed')]
+
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="it_tasks",
+        limit_choices_to={"role": "TECHNICIAN"},
+    )
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="it_tasks_created",
+    )
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default="Medium")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+    due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]

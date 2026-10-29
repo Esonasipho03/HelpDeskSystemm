@@ -19,7 +19,7 @@ Admin Dashboard
     </a>
 </div>
 
-<div class="stat-grid">
+<div class="stat-grid stat-grid-3">
 
     <div class="glass-card stat-card">
         <div class="stat-top">
@@ -92,7 +92,7 @@ Admin Dashboard
                 &middot; {{ task.created_at|timesince }} ago
             </small>
         </div>
-        <span class="status-badge">{{ task.status }}</span>
+        <span class="status-badge {{ task.status|lower|slugify }}">{{ task.status }}</span>
     </div>
     {% empty %}
     <p>No IT tasks assigned yet.</p>
@@ -117,7 +117,7 @@ Admin Dashboard
                 &middot; {{ ticket.created_at|timesince }} ago
             </small>
         </div>
-        <span class="status-badge">{{ ticket.status }}</span>
+        <span class="status-badge {{ ticket.status|lower|slugify }}">{{ ticket.status }}</span>
     </div>
     {% empty %}
     <p>No tickets yet.</p>

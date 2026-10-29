@@ -1,0 +1,11 @@
+{# Runs before the page paints so there is no light/dark flash. Choice is saved by static/js/theme.js #}
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('nkmb-theme') === 'dark' ? 'dark' : 'light';
+    var d = document.documentElement;
+    d.setAttribute('data-theme', t);
+    d.setAttribute('data-bs-theme', t);
+  } catch (e) {}
+})();
+</script>

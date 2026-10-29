@@ -1,4 +1,5 @@
 {% load static %}
+{% load ticket_extras %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,6 +20,7 @@ Help Desk
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
 
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/refined.css' %}?v=8">
 <style>
     .profile-wrapper, .notif-wrapper{
         position:relative;
@@ -185,6 +187,8 @@ Help Desk
     }
 </style>
 {% include 'pwa/head.html' %}
+{% include 'includes/theme_init.html' %}
+<script src="{% static 'js/theme.js' %}?v=1" defer></script>
 </head>
 
 <body>
@@ -231,6 +235,7 @@ Help Desk
     </div>
 
     <div class="topbar-right">
+        {% include 'includes/theme_toggle.html' %}
 
         <div class="notif-wrapper">
 
@@ -280,17 +285,13 @@ Help Desk
 
             <div id="profileButton" class="profile-button" onclick="togglePopup('profilePopup', event)">
 
-                <img
-                    src="{% static 'images/default-avatar.png' %}"
-                    class="profile-avatar"
-                >
+                <div class="profile-avatar avatar-initials" aria-hidden="true">{{ request.user|initials }}</div>
 
                 <div>
 
                     <strong>
 
-                        {{ request.user.first_name }}
-                        {{ request.user.last_name }}
+                        {{ request.user|display_name }}
 
                     </strong>
 
@@ -310,15 +311,11 @@ Help Desk
 
                 <div class="profile-popup-identity">
 
-                    <img
-                        src="{% static 'images/default-avatar.png' %}"
-                        class="popup-avatar"
-                    >
+                    <div class="popup-avatar avatar-initials" aria-hidden="true">{{ request.user|initials }}</div>
 
                     <h5>
 
-                        {{ request.user.first_name }}
-                        {{ request.user.last_name }}
+                        {{ request.user|display_name }}
 
                     </h5>
 
@@ -332,7 +329,7 @@ Help Desk
 
                     <div class="profile-info-row">
                         <i class="bi bi-person-vcard"></i>
-                        <span><strong>Employee No:</strong> {{ request.user.employee_number }}</span>
+                        <span><strong>Employee No:</strong> {{ request.user.employee_number|default:"Not set" }}</span>
                     </div>
 
                 </div>
@@ -385,11 +382,7 @@ Help Desk
         <div class="sidebar-header">
 
             
-            <h4>
-
-                {{ request.user.first_name }}
-
-            </h4>
+            <h4>{{ request.user|display_name }}</h4>
 
             <p>
 
@@ -399,11 +392,12 @@ Help Desk
 
         </div>
 
+        {% with page=request.resolver_match.url_name %}
         <ul class="sidebar-menu">
 
             <li>
 
-                <a href="{% url 'dashboard' %}" class="active">
+                <a href="{% url 'dashboard' %}" {% if page == 'dashboard' %}class="active" aria-current="page"{% endif %}>
 
                     <i class="bi bi-grid-fill"></i>
 
@@ -417,7 +411,7 @@ Help Desk
 
             <li>
 
-                <a href="{% url 'create_ticket' %}">
+                <a href="{% url 'create_ticket' %}" {% if page == 'create_ticket' %}class="active" aria-current="page"{% endif %}>
     <i class="bi bi-plus-circle-fill"></i>
     <span>Create Ticket</span>
 </a>
@@ -426,7 +420,7 @@ Help Desk
 
             <li>
 
-                <a href="{% url 'ticket_history' %}">
+                <a href="{% url 'ticket_history' %}" {% if page == 'ticket_history' or page == 'ticket_detail' or page == 'rate_ticket' %}class="active" aria-current="page"{% endif %}>
 
                     <i class="bi bi-clock-history"></i>
 
@@ -438,7 +432,7 @@ Help Desk
 
             <li>
 
-                <a href="{% url 'knowledge_base' %}">
+                <a href="{% url 'knowledge_base' %}" {% if page == 'knowledge_base' or page == 'article_detail' %}class="active" aria-current="page"{% endif %}>
 
                     <i class="bi bi-book-half"></i>
 
@@ -473,12 +467,14 @@ Help Desk
             </li>
 
         </ul>
+        {% endwith %}
 
     </aside>
 
     <!-- Main -->
 
     <main class="main-content">
+        {% include 'includes/messages.html' %}
 
         {% block content %}
 

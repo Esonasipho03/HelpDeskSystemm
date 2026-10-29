@@ -11,11 +11,14 @@ Employee Dashboard
 
     <div>
         <h1>
-            {{ request.user.username }}
-            👋
+            Welcome back, {{ request.user.first_name|default:request.user.username }}
         </h1>
         <p>
-            Welcome back to the NKMB Help Desk System.
+            {% if pending_reply_count %}
+                You have {{ pending_reply_count }} ticket{{ pending_reply_count|pluralize }} waiting for your reply.
+            {% else %}
+                Welcome to the NKMB Help Desk System.
+            {% endif %}
         </p>
     </div>
 

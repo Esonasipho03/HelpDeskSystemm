@@ -1,0 +1,819 @@
+/* ==========================================================
+   NKMB Help Desk: Refined Glass
+   Loaded AFTER dashboard.css (and the base templates' inline
+   <style> blocks are untouched). It only restyles; no markup
+   or view logic depends on it. To go back to the old look,
+   remove the <link> to this file from the three base templates.
+   ========================================================== */
+
+:root{
+    --glass-bg: rgba(255,255,255,0.55);
+    --glass-bg-strong: rgba(255,255,255,0.62);
+    --glass-border: rgba(255,255,255,0.85);
+    --glass-shadow: 0 4px 16px rgba(31,38,90,0.08);   /* lighter shadow = cheaper to paint */
+    --ink-soft: rgba(27,33,64,0.72);
+    --accent-text: #b24f00;          /* orange that passes contrast as text */
+    --radius: 24px;
+    --topbar-h: 72px;
+    --float-gap: 16px;
+    --on-accent: #1b2140;            /* text/icons that sit ON orange: dark in both themes */
+}
+
+body{
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Floating top bar ---------- */
+.topbar{
+    top: 12px;
+    left: var(--float-gap);
+    right: var(--float-gap);
+    height: var(--topbar-h);
+    padding: 0 22px;
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+    box-shadow: var(--glass-shadow);
+}
+.topbar-left h5{ font-weight: 700; }
+.nav-logo{ box-shadow: 0 4px 14px var(--accent-soft); }
+.search-box{
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--glass-border);
+}
+.icon-btn,
+.user-profile{
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--glass-border);
+}
+.icon-btn{ width: 44px; height: 44px; }
+.notification-dot{ background: var(--accent); border-color: #fff; }
+
+/* ---------- Layout offsets for the floating panels ---------- */
+.dashboard-wrapper{
+    margin-top: calc(var(--topbar-h) + 12px);
+}
+
+.sidebar{
+    top: calc(var(--topbar-h) + 28px);
+    left: var(--float-gap);
+    bottom: var(--float-gap);
+    min-height: 0;
+    padding: 22px 16px;
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+}
+
+.main-content{
+    margin-left: calc(var(--sidebar-w) + var(--float-gap));
+    width: calc(100% - var(--sidebar-w) - var(--float-gap));
+    padding: 24px 28px 48px;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar-header{ padding: 10px 10px 26px; }
+.sidebar-menu li{ margin: 6px 0; }
+
+.sidebar-menu a{
+    position: relative;
+    gap: 14px;
+    padding: 14px 20px;
+    border-radius: 16px;
+    font-size: .92rem;
+    font-weight: 500;
+}
+.sidebar-menu a i{
+    flex: none;
+    width: 20px;
+    font-size: 1.05rem;
+    text-align: center;
+    opacity: .8;
+}
+.sidebar-menu a:hover{
+    background: rgba(255,255,255,0.75);
+    transform: none;
+}
+.sidebar-menu a.active{
+    background: #ffffff;
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(31,38,90,0.08);
+}
+.sidebar-menu a.active::before{
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin: 0;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: var(--accent);
+}
+.sidebar-menu a.active .nav-badge{
+    background: rgba(27,33,64,0.1);
+    color: var(--ink);
+}
+.nav-badge-alert,
+.sidebar-menu a.active .nav-badge-alert{
+    background: #c22e46;
+    color: #fff;
+}
+
+/* ---------- Glass cards ---------- */
+.glass-card{
+    border-radius: var(--radius);
+}
+
+/* ---------- Welcome ---------- */
+.welcome-section{ margin-bottom: 24px; align-items: center; }
+.welcome-section h1{
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+}
+.welcome-section p{ font-size: 1rem; margin-top: 6px; }
+
+/* ---------- Buttons (navy text on orange: readable) ---------- */
+.glass-button{
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+    font-size: .92rem;
+    padding: 13px 26px;
+    box-shadow: 0 10px 24px var(--accent-soft);
+}
+.glass-button:hover{
+    color: var(--on-accent);
+    filter: brightness(1.06);
+}
+.glass-button-ghost{
+    background: rgba(255,255,255,0.7);
+    color: var(--ink);
+    border: 1px solid var(--glass-border);
+    box-shadow: none;
+}
+.claim-btn{ color: var(--on-accent); }
+
+/* ---------- Stat cards ---------- */
+.stat-grid{
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+}
+.stat-card{ padding: 20px 22px; border-radius: 22px; }
+.stat-card h2{ font-size: 2.4rem; font-weight: 700; line-height: 1; }
+.stat-card span{ font-size: .88rem; }
+.stat-icon{ color: var(--on-accent); border-radius: 12px; }
+
+/* ---------- Panels, lists ---------- */
+.panel{ padding: 24px 22px; border-radius: 24px; }
+.panel h3{ font-size: 1.1rem; font-weight: 700; }
+.panel h3 a{ color: var(--accent-text); font-size: .8rem; }
+
+.activity-item{ border-bottom: 1px solid rgba(27,33,64,0.08); }
+.activity-item p{ font-size: .9rem; }
+.activity-item small{ font-size: .76rem; }
+
+.ticket-row-link{ display: block; border-radius: 16px; }
+.ticket-row-link:hover{ background: rgba(241,120,7,0.08); border-radius: 16px; }
+.ticket-row-link .activity-item{ padding-left: 8px; padding-right: 8px; align-items: center; }
+.ticket-row-link .activity-item > div:nth-child(2){ flex: 1; min-width: 0; }
+
+.response-note,
+.meta-chip.response-note{ color: var(--accent-text); }
+
+/* ---------- Status and priority badges ----------
+   Note: the templates output slugified statuses, so "In Progress"
+   arrives as "in-progress". The old CSS only had "in_progress". */
+.status-badge{ padding: 5px 12px; font-size: .72rem; white-space: nowrap; }
+.status-badge.open{ background: #ffe9d2; color: #8a4300; }
+.status-badge.assigned,
+.status-badge.in_progress,
+.status-badge.in-progress{ background: #dbe9ff; color: #1f4fa8; }
+.status-badge.pending{ background: #fff1c9; color: #7a5600; }
+.status-badge.resolved,
+.status-badge.completed{ background: #d6f5e4; color: #14684a; }
+.status-badge.closed{ background: #e6e7ef; color: #4a4e68; }
+
+.priority-badge.high{ background: #fff1c9; color: #7a5600; }
+
+/* ---------- Forms ---------- */
+.glass-input{
+    background: #ffffff;
+    border: 1px solid rgba(27,33,64,0.14);
+    border-radius: 14px;
+}
+.glass-input:focus{
+    background: #ffffff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(241,120,7,0.22);
+}
+.form-error{ color: #c22e46; }
+
+/* ---------- Filter tabs and chips ---------- */
+.filter-tab{ background: rgba(255,255,255,0.7); }
+.filter-tab.active,
+.kb-tag.active{
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+/* ---------- Knowledge base ---------- */
+.kb-search-panel{ border-radius: 24px; }
+.kb-search-panel h3{ font-size: 1.25rem; }
+.kb-search-bar{
+    background: #ffffff;
+    border: 1px solid rgba(27,33,64,0.1);
+    border-radius: 16px;
+}
+.kb-search-bar i{ color: var(--accent-text); }
+.kb-tag{
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(27,33,64,0.08);
+}
+.kb-tag:hover{ background: #ffffff; }
+
+/* ---------- Quick links ---------- */
+.quick-link-card{ border-radius: 20px; }
+.quick-link-card:hover{ transform: translateY(-3px); }
+
+/* ---------- Tables (admin reports) ---------- */
+.report-table thead th{ border-bottom: 2px solid rgba(27,33,64,0.1); }
+.report-table tbody td{ border-bottom: 1px solid rgba(27,33,64,0.08); }
+.report-table tbody tr:hover{ background: rgba(241,120,7,0.06); }
+
+/* ---------- Accessibility ---------- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+    outline: 3px solid rgba(241,120,7,0.6);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+    .blob{ animation: none; }
+    *{ transition: none !important; }
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 760px){
+    .topbar{ padding: 0 12px; gap: 8px; }
+    .topbar-left{ gap: 10px; min-width: 0; }
+    .topbar-left h5{ font-size: .85rem; white-space: nowrap; }
+    .topbar-left small{ display: none; }
+    .topbar-right{ gap: 10px; flex: 0 0 auto; }
+    .user-profile strong{ font-size: .8rem; }
+    .main-content{ padding: 20px 14px 40px; }
+    .welcome-section h1{ font-size: 1.6rem; }
+    .sidebar-menu a.active::before{ display: none; }
+}
+
+/* Phones: logo only in the bar so the title never collides with the icons */
+@media (max-width: 520px){
+    .topbar-left > div{ display: none; }
+}
+
+/* ==========================================================
+   PERFORMANCE
+   The glass look comes from translucent white, soft borders and
+   the pastel background. The expensive part was the blur, which
+   the browser has to recompute for every card on every scroll
+   and for four big animated blurred blobs on every frame.
+   So: no backdrop-filter, and gradient blobs instead of blur
+   filters, with no animation. Result looks the same on this
+   soft background, but scrolls smoothly on modest hardware.
+   ========================================================== */
+
+/* 1. Background blobs: plain radial gradients, no blur filter, no animation */
+.blob{
+    filter: none;
+    animation: none;
+    opacity: 1;
+    border-radius: 50%;
+}
+.blob1{ background: radial-gradient(circle, rgba(241,120,7,0.42) 0%, rgba(241,120,7,0) 68%); }
+.blob2{ background: radial-gradient(circle, rgba(77,141,255,0.38) 0%, rgba(77,141,255,0) 68%); }
+.blob3{ background: radial-gradient(circle, rgba(255,111,177,0.36) 0%, rgba(255,111,177,0) 68%); }
+.blob4{ background: radial-gradient(circle, rgba(52,201,138,0.36) 0%, rgba(52,201,138,0) 68%); }
+
+/* 2. No backdrop blur anywhere; slightly more opaque glass to compensate */
+.topbar,
+.sidebar,
+.glass-card,
+.search-box,
+.glass-input,
+.kb-search-bar{
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+.topbar{ background: rgba(255,255,255,0.72); }
+.sidebar{ background: rgba(255,255,255,0.66); }
+.glass-card{ background: rgba(255,255,255,0.64); }
+
+/* 3. People who ask their system for less transparency get solid surfaces */
+@media (prefers-reduced-transparency: reduce){
+    .topbar,
+    .sidebar,
+    .glass-card{ background: #ffffff; }
+}
+
+/* ==========================================================
+   AVATARS (initials instead of an image: "John Doe" -> JD)
+   ========================================================== */
+.avatar-initials{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    border-radius: 50%;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--on-accent);
+    background: linear-gradient(135deg, #f17807, #ff9a3c);
+    user-select: none;
+}
+.profile-avatar.avatar-initials{
+    width: 40px;
+    height: 40px;
+    font-size: .95rem;
+    border: 2px solid rgba(255,255,255,0.8);
+}
+.popup-avatar.avatar-initials{
+    width: 76px;
+    height: 76px;
+    margin: 0 auto;
+    font-size: 1.7rem;
+    border: 4px solid #ffffff;
+}
+.profile-role-chip{ color: var(--accent-text); }
+.profile-button strong{ font-weight: 600; }
+.profile-button small{ color: var(--ink-soft); }
+
+/* ==========================================================
+   FORMS: roomier container, larger and clearer fields
+   ========================================================== */
+.form-card{
+    padding: 32px 34px;
+}
+.form-label{
+    display: block;
+    margin-bottom: 8px;
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+.form-control,
+.form-select{
+    min-height: 50px;
+    padding: .8rem 1rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--ink);
+    background-color: #ffffff;
+    border: 1px solid rgba(27,33,64,0.22);
+    border-radius: 14px;
+    box-shadow: none;
+}
+textarea.form-control{
+    min-height: 170px;
+    line-height: 1.55;
+    resize: vertical;
+}
+.form-control::placeholder{ color: rgba(27,33,64,0.55); }
+.form-control:focus,
+.form-select:focus{
+    color: var(--ink);
+    background-color: #ffffff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(241,120,7,0.2);
+}
+.form-control[type="file"]{ padding: .6rem 1rem; }
+.form-control[type="file"]::file-selector-button{
+    margin: 0 1rem 0 0;
+    padding: .5rem 1rem;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(27,33,64,0.08);
+    color: var(--ink);
+    font-weight: 600;
+}
+.form-text,
+small.text-muted,
+.text-muted{
+    color: var(--ink-soft) !important;
+    font-size: .85rem;
+}
+
+/* Submit / cancel buttons on these forms (Bootstrap's yellow becomes the brand orange) */
+.btn-warning{
+    --bs-btn-color: var(--on-accent);
+    --bs-btn-hover-color: var(--on-accent);
+    --bs-btn-active-color: var(--on-accent);
+    background-color: var(--accent);
+    border-color: transparent;
+    color: var(--on-accent);
+    font-weight: 700;
+    border-radius: 999px;
+    padding: .75rem 1.7rem;
+    box-shadow: 0 10px 24px var(--accent-soft);
+}
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active{
+    background-color: var(--accent);
+    border-color: transparent;
+    color: var(--on-accent);
+    filter: brightness(1.06);
+}
+.btn-light{
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(27,33,64,0.14);
+    color: var(--ink);
+    font-weight: 600;
+    border-radius: 999px;
+    padding: .75rem 1.5rem;
+}
+.btn-light:hover{ background: #ffffff; color: var(--ink); }
+.alert{ border-radius: 16px; }
+
+@media (max-width: 760px){
+    .form-card{ padding: 22px 18px; }
+}
+
+/* Profile popup: keep the avatar in front of the orange banner (it was half hidden) */
+.popup-avatar{
+    position: relative;
+    z-index: 1;
+}
+
+/* Buttons that are links should not be underlined */
+.glass-button,
+.glass-button:hover,
+.btn,
+.btn:hover{
+    text-decoration: none;
+}
+
+/* Action buttons never collapse into circles on narrow screens */
+.btn-warning,
+.btn-light{ white-space: nowrap; }
+form .d-flex.justify-content-end{ flex-wrap: wrap; }
+
+/* ==========================================================
+   TABLES AND LISTS: breathing room inside the glass cards
+   ========================================================== */
+.glass-card.table-card{
+    padding: 26px 30px 18px;
+    overflow: visible;
+}
+.table-scroll{ overflow-x: auto; }
+
+.filter-bar{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.filter-bar .form-select{
+    flex: 0 1 280px;
+    min-width: 200px;
+}
+
+.table{
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--ink);
+    --bs-table-hover-bg: rgba(241,120,7,0.06);
+    --bs-table-hover-color: var(--ink);
+    --bs-table-border-color: rgba(27,33,64,0.08);
+    margin-bottom: 0;
+}
+.table > :not(caption) > * > *{
+    padding: 1rem 1.1rem;
+    vertical-align: middle;
+}
+.table thead th{
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 2px solid rgba(27,33,64,0.10);
+    white-space: nowrap;
+}
+.table tbody td{ font-size: .93rem; }
+.table tbody tr:last-child > *{ border-bottom: 0; }
+
+/* Row action buttons ("View"): readable orange instead of pale yellow */
+.btn-outline-warning{
+    --bs-btn-color: var(--accent-text);
+    --bs-btn-border-color: rgba(241,120,7,0.55);
+    --bs-btn-hover-bg: var(--accent);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-hover-color: var(--on-accent);
+    --bs-btn-active-bg: var(--accent);
+    --bs-btn-active-border-color: var(--accent);
+    --bs-btn-active-color: var(--on-accent);
+    border-radius: 999px;
+    font-weight: 600;
+    padding: .4rem 1.1rem;
+}
+.priority-badge.critical{ background: rgba(224,71,92,0.18); color: #a3243a; }
+.priority-badge.low{ color: #4a4e68; }
+.priority-badge.medium{ color: #1f4fa8; }
+
+@media (max-width: 760px){
+    .glass-card.table-card{ padding: 20px 16px 12px; }
+    .sidebar-menu a{ justify-content: center; padding: 14px 0; }
+}
+
+/* Bootstrap indents every <ul> by 2rem, which squeezed the menu and wrapped
+   "Knowledge Base". Remove that indent so items use the full sidebar width. */
+.sidebar-menu{
+    padding: 0;
+    margin: 0;
+}
+.sidebar-menu a{ white-space: nowrap; }
+
+/* ==========================================================
+   THEME TOGGLE BUTTON
+   ========================================================== */
+button.icon-btn{ padding: 0; font: inherit; }
+.theme-toggle .theme-icon-sun{ display: none; }
+html[data-theme="dark"] .theme-toggle .theme-icon-moon{ display: none; }
+html[data-theme="dark"] .theme-toggle .theme-icon-sun{ display: inline; }
+
+/* White-on-orange badges in the notification popup (inline styles in the base
+   templates) fail contrast; use the dark "on accent" colour in both themes. */
+html .notif-unread-badge,
+html .notif-item.unread .notif-item-icon{ color: var(--on-accent); }
+
+/* ==========================================================
+   DARK MODE  (html[data-theme="dark"])
+   Same glass idea on a deep-navy ground: translucent navy surfaces,
+   hairline light borders, no blur (kept off for performance), and
+   solid, higher-contrast fields so typing stays easy to read.
+   Orange accents are unchanged; text on orange stays dark navy.
+   ========================================================== */
+html[data-theme="dark"]{
+    color-scheme: dark;
+    background: #12162e;
+
+    --ink: #eceffa;
+    --ink-soft: rgba(236,239,250,0.74);
+    --accent-text: #ffb066;
+    --glass-bg: rgba(34,40,82,0.62);
+    --glass-bg-strong: rgba(24,29,58,0.8);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-shadow: 0 4px 18px rgba(0,0,0,0.38);
+
+    --surface-solid: #1c2143;      /* popups and menus */
+    --field-bg: #171c3a;           /* inputs and selects */
+    --field-border: rgba(255,255,255,0.2);
+    --line: rgba(255,255,255,0.10);
+}
+html[data-theme="dark"]{
+    --bs-body-bg: #12162e;
+    --bs-body-color: #eceffa;
+    --bs-border-color: rgba(255,255,255,0.12);
+}
+html[data-theme="dark"] body{ color: var(--ink); background: transparent; }
+
+/* Bootstrap alert-light and similar pale utilities */
+html[data-theme="dark"] .alert-light{
+    background: rgba(255,255,255,0.07);
+    border-color: var(--line);
+    color: var(--ink-soft);
+}
+
+/* Background: deep navy with faint colour pools instead of pastel */
+html[data-theme="dark"] .fluid-bg{
+    background:
+        radial-gradient(circle at 15% 15%, rgba(241,120,7,0.16) 0%, transparent 45%),
+        radial-gradient(circle at 88% 10%, rgba(77,141,255,0.18) 0%, transparent 50%),
+        radial-gradient(circle at 25% 92%, rgba(255,111,177,0.12) 0%, transparent 50%),
+        radial-gradient(circle at 85% 85%, rgba(52,201,138,0.12) 0%, transparent 50%),
+        linear-gradient(135deg, #12162e 0%, #1a1e3d 100%);
+}
+html[data-theme="dark"] .blob{ opacity: .55; }
+
+/* Glass surfaces */
+html[data-theme="dark"] .topbar{ background: rgba(24,29,58,0.82); }
+html[data-theme="dark"] .sidebar{ background: rgba(24,29,58,0.72); }
+html[data-theme="dark"] .glass-card{ background: var(--glass-bg); }
+html[data-theme="dark"] .glass-card::before{
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+}
+
+/* Top bar controls */
+html[data-theme="dark"] .search-box,
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .user-profile{
+    background: rgba(255,255,255,0.08);
+    border-color: var(--glass-border);
+}
+html[data-theme="dark"] .icon-btn:hover{ background: rgba(255,255,255,0.15); }
+html[data-theme="dark"] .notification-dot{ border-color: #1c2143; }
+
+/* Sidebar */
+html[data-theme="dark"] .sidebar-menu a:hover{ background: rgba(255,255,255,0.08); }
+html[data-theme="dark"] .sidebar-menu a.active{
+    background: rgba(255,255,255,0.13);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
+}
+html[data-theme="dark"] .nav-badge{ background: rgba(255,255,255,0.14); color: var(--ink); }
+html[data-theme="dark"] .sidebar-menu a.active .nav-badge{ background: rgba(255,255,255,0.2); color: var(--ink); }
+
+/* Fields: solid, high contrast */
+html[data-theme="dark"] .glass-input,
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .status-select,
+html[data-theme="dark"] .kb-search-bar{
+    background-color: var(--field-bg);
+    color: var(--ink);
+    border-color: var(--field-border);
+}
+html[data-theme="dark"] .glass-input:focus,
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-select:focus{
+    background-color: var(--field-bg);
+    color: var(--ink);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(241,120,7,0.28);
+}
+html[data-theme="dark"] .form-control::placeholder,
+html[data-theme="dark"] .glass-input::placeholder,
+html[data-theme="dark"] .kb-search-bar input::placeholder,
+html[data-theme="dark"] .search-box input::placeholder{ color: rgba(236,239,250,0.5); }
+html[data-theme="dark"] .kb-search-bar input,
+html[data-theme="dark"] .search-box input{ color: var(--ink); }
+html[data-theme="dark"] option{ background: var(--field-bg); color: var(--ink); }
+html[data-theme="dark"] .form-control[type="file"]::file-selector-button{
+    background: rgba(255,255,255,0.12);
+    color: var(--ink);
+}
+/* Browser autofill would otherwise paint a pale box */
+html[data-theme="dark"] input:-webkit-autofill,
+html[data-theme="dark"] textarea:-webkit-autofill{
+    -webkit-text-fill-color: var(--ink);
+    box-shadow: 0 0 0 1000px var(--field-bg) inset;
+    caret-color: var(--ink);
+}
+html[data-theme="dark"] .form-error{ color: #ff8a9b; }
+
+/* Buttons and chips that were pale in light mode */
+html[data-theme="dark"] .glass-button-ghost,
+html[data-theme="dark"] .btn-light,
+html[data-theme="dark"] .filter-tab,
+html[data-theme="dark"] .kb-tag{
+    background: rgba(255,255,255,0.09);
+    border-color: var(--glass-border);
+    color: var(--ink);
+}
+html[data-theme="dark"] .glass-button-ghost:hover,
+html[data-theme="dark"] .btn-light:hover,
+html[data-theme="dark"] .kb-tag:hover{
+    background: rgba(255,255,255,0.16);
+    color: var(--ink);
+}
+html[data-theme="dark"] .filter-tab.active,
+html[data-theme="dark"] .kb-tag.active{
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+/* Tables and lists */
+html[data-theme="dark"] .table{
+    --bs-table-hover-bg: rgba(241,120,7,0.10);
+    --bs-table-border-color: var(--line);
+}
+html[data-theme="dark"] .table thead th{ border-bottom-color: rgba(255,255,255,0.16); }
+html[data-theme="dark"] .report-table thead th{ border-bottom-color: rgba(255,255,255,0.16); }
+html[data-theme="dark"] .report-table tbody td{ border-bottom-color: var(--line); }
+html[data-theme="dark"] .report-table tbody tr:hover{ background: rgba(241,120,7,0.10); }
+html[data-theme="dark"] .activity-item{ border-bottom-color: var(--line); }
+html[data-theme="dark"] .ticket-row-link:hover{ background: rgba(241,120,7,0.12); }
+html[data-theme="dark"] .thread-bubble{ background: rgba(255,255,255,0.07); }
+html[data-theme="dark"] .thread-bubble.mine{
+    background: linear-gradient(135deg, rgba(241,120,7,0.28), rgba(255,154,60,0.18));
+}
+
+/* Status, priority and misc badges: tinted dark with light text */
+html[data-theme="dark"] .status-badge.open{ background: rgba(241,120,7,0.24); color: #ffc08a; }
+html[data-theme="dark"] .status-badge.assigned,
+html[data-theme="dark"] .status-badge.in_progress,
+html[data-theme="dark"] .status-badge.in-progress{ background: rgba(77,141,255,0.26); color: #b5d3ff; }
+html[data-theme="dark"] .status-badge.pending{ background: rgba(240,180,41,0.24); color: #ffd873; }
+html[data-theme="dark"] .status-badge.completed,
+html[data-theme="dark"] .status-badge.resolved{ background: rgba(52,201,138,0.24); color: #8ff0c0; }
+html[data-theme="dark"] .status-badge.closed{ background: rgba(255,255,255,0.12); color: #cfd2e6; }
+html[data-theme="dark"] .priority-badge.low{ background: rgba(255,255,255,0.12); color: #cfd2e6; }
+html[data-theme="dark"] .priority-badge.medium{ background: rgba(77,141,255,0.26); color: #b5d3ff; }
+html[data-theme="dark"] .priority-badge.high{ background: rgba(240,180,41,0.24); color: #ffd873; }
+html[data-theme="dark"] .priority-badge.urgent,
+html[data-theme="dark"] .priority-badge.critical{ background: rgba(224,71,92,0.28); color: #ff9aa8; }
+html[data-theme="dark"] .profile-role-chip{ background: rgba(241,120,7,0.2); color: #ffc08a; }
+html[data-theme="dark"] .completion-badge{ background: rgba(52,201,138,0.24); color: #8ff0c0; }
+html[data-theme="dark"] .form-alert{ background: rgba(52,201,138,0.2); color: #8ff0c0; }
+
+/* Popups (their light colours are set by inline styles in the base templates) */
+html[data-theme="dark"] .profile-popup,
+html[data-theme="dark"] .notif-popup{
+    background: var(--surface-solid);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.55), inset 0 0 0 1px var(--glass-border);
+}
+html[data-theme="dark"] .notif-popup-header{ border-bottom-color: var(--line); }
+html[data-theme="dark"] .notif-popup-header h5,
+html[data-theme="dark"] .notif-item p{ color: var(--ink); }
+html[data-theme="dark"] .notif-item{
+    color: var(--ink) !important;
+    border-bottom-color: var(--line);
+}
+html[data-theme="dark"] .notif-item small,
+html[data-theme="dark"] .notif-empty{ color: var(--ink-soft); }
+html[data-theme="dark"] .notif-item:hover{ background: rgba(241,120,7,0.12); }
+html[data-theme="dark"] .notif-item.unread{ background: rgba(241,120,7,0.08); }
+html[data-theme="dark"] .profile-popup-menu{ border-top-color: var(--line); }
+html[data-theme="dark"] .profile-popup-divider{ background: var(--line); }
+html[data-theme="dark"] .profile-popup-menu a:hover{ background: rgba(241,120,7,0.14); color: var(--accent-text); }
+html[data-theme="dark"] .profile-popup-menu a:hover i{ color: var(--accent-text); }
+html[data-theme="dark"] .profile-popup-menu a.menu-item-logout,
+html[data-theme="dark"] .profile-popup-menu a.menu-item-logout i{ color: #ff8a9b; }
+html[data-theme="dark"] .profile-popup-menu a.menu-item-logout:hover{ background: rgba(224,71,92,0.18); }
+html[data-theme="dark"] .popup-avatar.avatar-initials{ border-color: var(--surface-solid); }
+html[data-theme="dark"] .avatar-initials{ color: var(--on-accent); }
+
+/* Links styled as orange text */
+html[data-theme="dark"] .panel h3 a,
+html[data-theme="dark"] .response-note,
+html[data-theme="dark"] .meta-chip.response-note,
+html[data-theme="dark"] .kb-search-bar i{ color: var(--accent-text); }
+
+/* Bootstrap leftovers */
+html[data-theme="dark"] .alert{ border-color: var(--glass-border); }
+html[data-theme="dark"] .btn-outline-warning{ --bs-btn-color: var(--accent-text); }
+
+html[data-theme="dark"] a:focus-visible,
+html[data-theme="dark"] button:focus-visible,
+html[data-theme="dark"] input:focus-visible,
+html[data-theme="dark"] select:focus-visible,
+html[data-theme="dark"] textarea:focus-visible{ outline-color: rgba(255,176,102,0.75); }
+
+@media (prefers-reduced-transparency: reduce){
+    html[data-theme="dark"] .topbar,
+    html[data-theme="dark"] .sidebar,
+    html[data-theme="dark"] .glass-card{ background: #1a1f40; }
+}
+
+
+/* ==========================================================
+   Smooth theme switch
+   ========================================================== */
+::view-transition-old(root),
+::view-transition-new(root){
+    animation-duration: .45s;
+    animation-timing-function: ease;
+}
+/* Fallback for browsers without View Transitions; only active for ~450ms */
+html.theme-fading *,
+html.theme-fading *::before,
+html.theme-fading *::after{
+    transition: background-color .4s ease, color .4s ease, border-color .4s ease,
+                box-shadow .4s ease, fill .4s ease !important;
+}
+@media (prefers-reduced-motion: reduce){
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*){ animation: none !important; }
+    html.theme-fading *{ transition: none !important; }
+}
+
+
+/* ==========================================================
+   Admin console touches
+   ========================================================== */
+a.stat-card, a.stat-card:hover{ color: inherit; text-decoration: none; }
+a.stat-card:hover{ transform: translateY(-2px); }
+a.stat-card span, a.stat-card h2{ text-decoration: none; color: inherit; }
+
+/* six stat cards sit as 3 x 2 instead of leaving one orphaned */
+.stat-grid.stat-grid-3{ grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 760px){ .stat-grid.stat-grid-3{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px){ .stat-grid.stat-grid-3{ grid-template-columns: 1fr; } }
+
+.report-table{ width: 100%; }
+.report-table th{ font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); padding: 12px 14px; }
+.report-table td{ padding: 14px; border-top: 1px solid var(--line); }
+
+
+/* Claim box on the technician ticket page */
+.claim-box{
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(241,120,7,0.10);
+    border: 1px solid rgba(241,120,7,0.28);
+}
+.claim-box p{ font-size: .9rem; color: var(--ink-soft); }
+html[data-theme="dark"] .claim-box{ background: rgba(241,120,7,0.14); border-color: rgba(241,120,7,0.34); }

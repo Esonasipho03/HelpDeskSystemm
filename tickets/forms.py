@@ -153,3 +153,28 @@ class KnowledgeBaseArticleForm(forms.ModelForm):
             }),
 
         }
+
+class ITTaskForm(forms.ModelForm):
+    """Admin form for handing an IT task to a technician."""
+
+    class Meta:
+        from .models import ITTask as _ITTask
+        model = _ITTask
+        fields = ["title", "assigned_to", "priority", "due_date", "description"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "What needs doing?"}),
+            "assigned_to": forms.Select(attrs={"class": "form-select"}),
+            "priority": forms.Select(attrs={"class": "form-select"}),
+            "due_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}, format="%Y-%m-%d"),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5,
+                                                 "placeholder": "Add any details the technician needs"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.contrib.auth import get_user_model
+        self.fields["assigned_to"].queryset = get_user_model().objects.filter(
+            role="TECHNICIAN", is_active=True
+        ).order_by("first_name", "username")
+        self.fields["assigned_to"].label_from_instance = lambda u: u.get_full_name() or u.username
+        self.fields["assigned_to"].empty_label = "Choose a technician"
