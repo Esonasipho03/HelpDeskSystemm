@@ -49,6 +49,28 @@ def _audience_for(user):
     return "technician" if role == "TECHNICIAN" else "employee"
 
 
+def _notify_staff_of_new_ticket(ticket, creator):
+    """Tell every active technician and admin about a new ticket, assigned or not.
+
+    This is what makes the live bell/sound fire for staff whenever a ticket is
+    created. The auto-assigned technician already got a dedicated "You were
+    assigned" notification, and the creator is never notified about their own
+    ticket here.
+    """
+    skip = {creator.pk}
+    if ticket.assigned_to_id:
+        skip.add(ticket.assigned_to_id)
+
+    message = f"New ticket #{ticket.id}: {ticket.title}"
+
+    for tech in User.objects.filter(role="TECHNICIAN", is_active=True).exclude(pk__in=skip):
+        create_notification(tech, message, ticket=ticket, audience="technician")
+
+    # Admins read the "employee" bucket (see _audience_for / the context processor).
+    for admin in User.objects.filter(Q(role="ADMIN") | Q(is_superuser=True), is_active=True).exclude(pk__in=skip):
+        create_notification(admin, message, ticket=ticket, audience="employee")
+
+
 @login_required
 def create_ticket(request):
     initial = {}
@@ -96,6 +118,8 @@ def create_ticket(request):
                     ticket=ticket,
                     audience="employee",
                 )
+
+            _notify_staff_of_new_ticket(ticket, request.user)
 
             return redirect("ticket_detail", pk=ticket.pk)
 
