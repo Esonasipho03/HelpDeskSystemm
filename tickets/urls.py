@@ -6,6 +6,9 @@ urlpatterns = [
     # live notification poll (all roles)
     path("notifications/latest/", admin_views.notifications_latest, name="notifications_latest"),
 
+    # live search dropdown (all roles)
+    path("search/api/", views.ticket_search_api, name="ticket_search_api"),
+
     # admin console
     path("admin/tasks/", admin_views.admin_task_list, name="admin_task_list"),
     path("admin/tasks/new/", admin_views.admin_task_create, name="admin_task_create"),

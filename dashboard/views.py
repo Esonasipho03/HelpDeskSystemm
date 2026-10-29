@@ -173,6 +173,12 @@ def technician_dashboard(request):
 
     user = request.user
 
+    role = str(getattr(user, "role", "")).upper()
+    if role == "ADMIN" or user.is_superuser:
+        return redirect("admin_dashboard")
+    if role != "TECHNICIAN":
+        return redirect("dashboard")
+
     assigned = Ticket.objects.filter(
         assigned_to=user
     )

@@ -2,7 +2,8 @@
 <script>
 (function () {
   try {
-    var t = localStorage.getItem('nkmb-theme') === 'dark' ? 'dark' : 'light';
+    var saved = localStorage.getItem('nkmb-theme') || localStorage.getItem('theme');   // 'theme' = older toggle
+    var t = saved === 'dark' ? 'dark' : 'light';
     var d = document.documentElement;
     d.setAttribute('data-theme', t);
     d.setAttribute('data-bs-theme', t);

@@ -1,5 +1,71 @@
-{% extends "base_technician_dashboard .html" %}
+{% extends base_template %}
+
+{% block title %}
+Search{% if query %}: {{ query }}{% endif %}
+{% endblock %}
 
 {% block content %}
-<h2>Coming Soon</h2>
+
+<div class="welcome-section">
+    <div>
+        <h1>Search Tickets</h1>
+        <p>Find a ticket by number, title, description or the person who filed it.</p>
+    </div>
+</div>
+
+<div class="glass-card table-card">
+
+    <form method="get" action="{% url 'ticket_search' %}" class="filter-bar">
+        <input type="text" name="q" class="form-control" value="{{ query }}"
+               placeholder="e.g. #12, printer, or a name" aria-label="Search tickets" autofocus>
+        <button type="submit" class="btn btn-warning">
+            <i class="bi bi-search"></i>
+            Search
+        </button>
+    </form>
+
+    {% if query %}
+    <p class="text-muted mb-3">
+        {{ tickets|length }} result{{ tickets|length|pluralize }} for &ldquo;{{ query }}&rdquo;
+    </p>
+    {% endif %}
+
+    {% if tickets %}
+    <div class="table-scroll">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Requester</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Assigned</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>#{{ ticket.id }}</td>
+                    <td>{{ ticket.title }}</td>
+                    <td>{{ ticket.created_by.get_full_name|default:ticket.created_by.username }}</td>
+                    <td><span class="status-badge {{ ticket.status|lower|slugify }}">{{ ticket.status }}</span></td>
+                    <td><span class="priority-badge {{ ticket.priority|lower }}">{{ ticket.priority }}</span></td>
+                    <td>{{ ticket.assigned_to.username|default:"Unassigned" }}</td>
+                    <td><a href="{% url 'technician_ticket_detail' ticket.pk %}" class="btn btn-sm btn-outline-warning">Open</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif query %}
+    <div class="empty-state">
+        <i class="bi bi-search"></i>
+        No tickets match that search.
+    </div>
+    {% endif %}
+
+</div>
+
 {% endblock %}

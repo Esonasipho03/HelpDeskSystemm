@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q
 from django.utils import timezone
@@ -24,6 +25,8 @@ from .forms import (
 )
 
 User = get_user_model()
+
+from .admin_views import staff_required, technician_only, is_admin, is_technician  # noqa: E402
 
 AUTO_ASSIGN = {
     Department.SALES: "Phila",
@@ -147,6 +150,13 @@ def ticket_history(request):
 
 @login_required
 def ticket_detail(request, pk):
+
+    # Technicians/admins following a link to a ticket they didn't file get the
+    # staff view of it rather than a 404.
+    if (is_technician(request.user) or is_admin(request.user)) and not Ticket.objects.filter(
+        pk=pk, created_by=request.user
+    ).exists():
+        return redirect("technician_ticket_detail", pk=pk)
 
     ticket = get_object_or_404(
         Ticket,
@@ -358,7 +368,7 @@ def article_detail(request, pk):
     )
 
 
-@login_required
+@staff_required
 def all_tickets(request):
     from .admin_views import is_admin, admin_all_tickets_context
     if is_admin(request.user):
@@ -377,7 +387,7 @@ def all_tickets(request):
     })
 
 
-@login_required
+@technician_only("all_tickets")
 def my_queue(request):
 
     tickets = Ticket.objects.filter(
@@ -404,7 +414,7 @@ def my_queue(request):
     )
 
 
-@login_required
+@staff_required
 def unassigned_queue(request):
     from .admin_views import is_admin, admin_unassigned_context
     if is_admin(request.user):
@@ -423,21 +433,35 @@ def unassigned_queue(request):
     )
 
 
-@login_required
+@staff_required
 def ticket_search(request):
-    query = request.GET.get("q", "")
+    query = request.GET.get("q", "").strip()
+    tickets = Ticket.objects.none()
 
-    tickets = Ticket.objects.filter(
-        title__icontains=query
-    ).order_by("-created_at")
+    if query:
+        number = query.lstrip("#")
+        match = (
+            Q(title__icontains=query)
+            | Q(description__icontains=query)
+            | Q(created_by__username__icontains=query)
+            | Q(created_by__first_name__icontains=query)
+            | Q(created_by__last_name__icontains=query)
+        )
+        if number.isdigit():
+            match |= Q(pk=int(number))
+        tickets = (
+            Ticket.objects.filter(match)
+            .select_related("created_by", "assigned_to")
+            .order_by("-created_at")[:100]
+        )
 
-    return render(request, "tickets/technician/search_results.html", {
+    return render(request, "tickets/search_results.html", {
         "tickets": tickets,
         "query": query,
     })
 
 
-@login_required
+@technician_only("admin_dashboard")
 def technician_profile(request):
 
     context = {
@@ -603,12 +627,8 @@ def update_ticket_status(request, pk):
     return redirect("technician_ticket_detail", pk=ticket.pk)
 
 
-@login_required
+@staff_required
 def technician_ticket_detail(request, pk):
-    from .admin_views import is_admin, is_technician
-    if not (is_admin(request.user) or is_technician(request.user)):
-        messages.error(request, "You don't have permission to view that page.")
-        return redirect("dashboard")
 
     ticket = get_object_or_404(
         Ticket,
@@ -671,7 +691,7 @@ def technician_ticket_detail(request, pk):
     )
 
 
-@login_required
+@staff_required
 def manage_articles(request):
 
     articles = KnowledgeBaseArticle.objects.all()
@@ -692,7 +712,7 @@ def manage_articles(request):
     )
 
 
-@login_required
+@staff_required
 def create_article(request):
 
     if request.method == "POST":
@@ -730,8 +750,11 @@ def create_article(request):
     )
 
 
-@login_required
+@staff_required
 def delete_article(request, pk):
+
+    if request.method != "POST":
+        return redirect("manage_articles")
 
     article = get_object_or_404(
         KnowledgeBaseArticle,
@@ -750,7 +773,7 @@ def delete_article(request, pk):
     )
 
 
-@login_required
+@staff_required
 def edit_article(request, pk):
     article = get_object_or_404(
         KnowledgeBaseArticle,
@@ -790,7 +813,7 @@ def edit_article(request, pk):
     )
 
 
-@login_required
+@staff_required
 def preview_article(request, pk):
     article = get_object_or_404(
         KnowledgeBaseArticle,
@@ -864,3 +887,45 @@ def admin_assign_ticket(request, pk):
 
     return redirect("unassigned_queue")
 
+
+@login_required
+def ticket_search_api(request):
+    """JSON for the top-bar live search dropdown.
+
+    Technicians and admins search every ticket; employees only ever see their own.
+    """
+    query = request.GET.get("q", "").strip()
+    if not query:
+        return JsonResponse({"results": []})
+
+    staff = is_technician(request.user) or is_admin(request.user)
+
+    match = (
+        Q(title__icontains=query)
+        | Q(created_by__first_name__icontains=query)
+        | Q(created_by__last_name__icontains=query)
+        | Q(created_by__username__icontains=query)
+    )
+    number = query.lstrip("#")
+    if number.isdigit():
+        match |= Q(pk=int(number))
+
+    tickets = Ticket.objects.filter(match).select_related("created_by")
+    if not staff:
+        tickets = tickets.filter(created_by=request.user)
+    tickets = tickets.order_by("-created_at")[:8]
+
+    detail_route = "technician_ticket_detail" if staff else "ticket_detail"
+    return JsonResponse({
+        "results": [
+            {
+                "id": t.pk,
+                "title": t.title,
+                "requester": (t.created_by.get_full_name() or t.created_by.username) if t.created_by else "",
+                "status": t.get_status_display(),
+                "priority": t.priority,
+                "url": reverse(detail_route, kwargs={"pk": t.pk}),
+            }
+            for t in tickets
+        ]
+    })

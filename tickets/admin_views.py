@@ -68,16 +68,37 @@ def admin_required(view):
     return wrapper
 
 
-def technician_required(view):
+
+def staff_required(view):
+    """Technicians and admins only (shared work pages). Employees go home."""
     @login_required
     def wrapper(request, *args, **kwargs):
         if not (is_technician(request.user) or is_admin(request.user)):
-            messages.error(request, "IT tasks are only available to technicians.")
+            messages.error(request, "You don't have permission to view that page.")
             return redirect(_home_for(request.user))
         return view(request, *args, **kwargs)
     wrapper.__name__ = view.__name__
     wrapper.__doc__ = view.__doc__
     return wrapper
+
+
+def technician_only(admin_redirect="admin_dashboard"):
+    """Technician-only pages. Admins are sent to their equivalent admin page
+    (so they never land in the technician layout); employees go home."""
+    def decorate(view):
+        @login_required
+        def wrapper(request, *args, **kwargs):
+            if is_technician(request.user):
+                return view(request, *args, **kwargs)
+            if is_admin(request.user):
+                target = admin_redirect(request, *args, **kwargs) if callable(admin_redirect) else admin_redirect
+                return redirect(target) if isinstance(target, str) else target
+            messages.error(request, "You don't have permission to view that page.")
+            return redirect(_home_for(request.user))
+        wrapper.__name__ = view.__name__
+        wrapper.__doc__ = view.__doc__
+        return wrapper
+    return decorate
 
 
 def _notify(user, message, audience):
@@ -167,7 +188,7 @@ def _set_task_status(task, status):
     task.save()
 
 
-@technician_required
+@technician_only("admin_task_list")
 def technician_tasks(request):
     tasks = ITTask.objects.filter(assigned_to=request.user).select_related("assigned_by")
     status_filter = request.GET.get("status")
@@ -180,7 +201,7 @@ def technician_tasks(request):
     })
 
 
-@technician_required
+@technician_only(lambda request, pk: redirect("admin_task_edit", pk=pk))
 def technician_task_detail(request, pk):
     task = get_object_or_404(ITTask, pk=pk, assigned_to=request.user)
     valid = {value for value, _ in ITTask.STATUS_CHOICES}
@@ -196,7 +217,7 @@ def technician_task_detail(request, pk):
     })
 
 
-@technician_required
+@technician_only("admin_task_list")
 def update_task_status(request, pk):
     task = get_object_or_404(ITTask, pk=pk, assigned_to=request.user)
     if request.method == "POST":

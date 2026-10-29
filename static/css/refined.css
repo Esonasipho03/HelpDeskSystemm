@@ -482,6 +482,11 @@ form .d-flex.justify-content-end{ flex-wrap: wrap; }
     flex: 0 1 280px;
     min-width: 200px;
 }
+.filter-bar .form-control{
+    flex: 1 1 260px;
+    width: auto;
+    min-width: 0;
+}
 
 .table{
     --bs-table-bg: transparent;
@@ -817,3 +822,43 @@ a.stat-card span, a.stat-card h2{ text-decoration: none; color: inherit; }
 }
 .claim-box p{ font-size: .9rem; color: var(--ink-soft); }
 html[data-theme="dark"] .claim-box{ background: rgba(241,120,7,0.14); border-color: rgba(241,120,7,0.34); }
+
+/* ==========================================================
+   Live search dropdown (top bar), light + dark
+   ========================================================== */
+.search-box-wrapper{ margin: 0; }
+.search-dropdown{
+    background: var(--surface-solid, #fff);
+    border: 1px solid var(--glass-border, rgba(27,33,64,.08));
+}
+.search-result-item{ color: var(--ink, #1b2140) !important; border-bottom-color: var(--line, #f1f1f5) !important; }
+.search-result-item small{ color: var(--ink-soft, rgba(27,33,64,.7)); }
+.search-result-status{ color: var(--on-accent, #1b2140) !important; }
+.search-dropdown-empty{ padding: 16px 20px; color: var(--ink-soft, rgba(27,33,64,.7)); }
+html[data-theme="dark"] .search-dropdown{ box-shadow: 0 20px 50px rgba(0,0,0,.55); }
+html[data-theme="dark"] .search-result-item:hover,
+html[data-theme="dark"] .search-result-item.active{ background: rgba(255,255,255,.08); }
+
+/* the base templates' inline styles hard-code light colours here, so win by specificity */
+html[data-theme="dark"] .search-dropdown{
+    background: var(--surface-solid) !important;
+    border: 1px solid var(--glass-border) !important;
+}
+html[data-theme="dark"] .search-result-item{
+    color: var(--ink) !important;
+    border-bottom-color: var(--line) !important;
+}
+html[data-theme="dark"] .search-result-item small{ color: var(--ink-soft) !important; }
+html[data-theme="dark"] .search-dropdown-empty{ color: var(--ink-soft) !important; }
+
+/* no boxed focus ring inside the pill-shaped search field; the pill itself shows focus */
+.search-box input,
+.search-box input:focus{
+    outline: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+.search-box:focus-within{ box-shadow: 0 0 0 3px rgba(241,120,7,.28); }
+html[data-theme="dark"] .search-result-main p,
+html[data-theme="dark"] .search-result-main{ color: var(--ink) !important; }
