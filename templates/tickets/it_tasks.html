@@ -37,8 +37,8 @@ IT Tasks
             <div class="queue-meta">{{ task.description }}</div>
             {% endif %}
         </div>
-        <span class="priority-badge {{ task.priority }}">{{ task.get_priority_display }}</span>
-        <span class="status-badge {{ task.status }}">{{ task.get_status_display }}</span>
+        <span class="priority-badge {{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+        <span class="status-badge {{ task.status|lower|slugify }}">{{ task.get_status_display }}</span>
         <div class="queue-actions">
             <form method="post" action="{% url 'update_task_status' task.pk %}">
                 {% csrf_token %}

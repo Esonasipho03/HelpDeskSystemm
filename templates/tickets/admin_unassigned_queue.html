@@ -24,14 +24,14 @@ Unassigned Tickets
     {% for ticket in tickets %}
     <div class="queue-row">
         <div class="queue-main">
-            <a href="{% url 'ticket_detail' ticket.pk %}">{{ ticket.title }}</a>
+            <a href="{% url 'technician_ticket_detail' ticket.pk %}">{{ ticket.title }}</a>
             <div class="queue-meta">
                 #{{ ticket.pk }} &middot; {{ ticket.created_by.first_name }} {{ ticket.created_by.last_name }}
                 &middot; {{ ticket.get_category_display }}
                 &middot; opened {{ ticket.created_at|timesince }} ago
             </div>
         </div>
-        <span class="priority-badge {{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+        <span class="priority-badge {{ ticket.priority|lower }}">{{ ticket.get_priority_display }}</span>
         <div class="queue-actions">
             <form method="post" action="{% url 'admin_assign_ticket' ticket.pk %}" class="assign-form">
                 {% csrf_token %}

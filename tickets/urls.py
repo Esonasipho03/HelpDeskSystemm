@@ -1,8 +1,24 @@
 from django.urls import path
 from django.http import JsonResponse
-from . import views
+from . import views, admin_views
 
 urlpatterns = [
+    # live notification poll (all roles)
+    path("notifications/latest/", admin_views.notifications_latest, name="notifications_latest"),
+
+    # admin console
+    path("admin/tasks/", admin_views.admin_task_list, name="admin_task_list"),
+    path("admin/tasks/new/", admin_views.admin_task_create, name="admin_task_create"),
+    path("admin/tasks/<int:pk>/edit/", admin_views.admin_task_edit, name="admin_task_edit"),
+    path("admin/report/", admin_views.technician_report, name="technician_report"),
+    path("admin/report/export/", admin_views.technician_report_export, name="technician_report_export"),
+    path("admin/tickets/export/", admin_views.all_tickets_export, name="all_tickets_export"),
+
+    # technician IT tasks
+    path("technician/tasks/", admin_views.technician_tasks, name="technician_tasks"),
+    path("technician/tasks/<int:pk>/", admin_views.technician_task_detail, name="technician_task_detail"),
+    path("technician/tasks/<int:pk>/status/", admin_views.update_task_status, name="update_task_status"),
+
     path("notifications/mark-read/", views.mark_notifications_read, name="mark_notifications_read"),
     path("tickets/<int:pk>/admin-assign/", views.admin_assign_ticket, name="admin_assign_ticket"),
     path("create/", views.create_ticket, name="create_ticket"),

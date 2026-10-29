@@ -38,6 +38,14 @@ def employee_dashboard(request):
 def employee_dashboard(request):
     user = request.user
 
+    # Admins and technicians have their own dashboards; any "back to dashboard"
+    # link that points here should land them there, not on the employee page.
+    role = str(getattr(user, "role", "")).upper()
+    if role == "ADMIN" or user.is_superuser:
+        return redirect("admin_dashboard")
+    if role == "TECHNICIAN":
+        return redirect("technician_dashboard")
+
     my_tickets = Ticket.objects.filter(created_by=user)
 
     context = {

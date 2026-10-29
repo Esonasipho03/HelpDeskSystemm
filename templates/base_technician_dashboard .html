@@ -1,4 +1,5 @@
 {% load static %}
+{% load ticket_extras %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +23,7 @@
 <link rel="stylesheet" href="/static/css/dashboard.css?v=5">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/refined.css' %}?v=8">
 <style>
     .profile-wrapper, .notif-wrapper{
         position:relative;
@@ -288,6 +290,8 @@
 }
 </style>
 {% include 'pwa/head.html' %}
+{% include 'includes/theme_init.html' %}
+<script src="{% static 'js/theme.js' %}?v=1" defer></script>
 </head>
 <body
     data-notif-poll-url="{% url 'notifications_latest' %}"
@@ -329,16 +333,6 @@
 </div>
     </div>
     <div class="topbar-right">
-        <button
-            id="themeToggleBtn"
-            class="icon-btn theme-toggle-btn"
-            type="button"
-            onclick="toggleTheme()"
-            aria-label="Toggle dark mode"
-        >
-            <i class="bi bi-moon-stars" id="themeToggleIcon"></i>
-        </button>
-
         <div class="notif-wrapper">
 
     <div id="notifButton"
@@ -397,6 +391,91 @@
     </div>
 
 </div>
+        
+        <div class="profile-wrapper">
+
+            <div id="profileButton" class="profile-button" onclick="togglePopup('profilePopup', event)">
+
+                <img
+                    src="{% static 'images/default-avatar.png' %}"
+                    class="profile-avatar"
+                >
+
+                <div>
+
+                    <strong>{{ request.user.get_full_name }}</strong>
+
+                    <small>
+                        {{ request.user.role }}
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div id="profilePopup" class="profile-popup">
+
+                <div class="profile-popup-banner"></div>
+
+                <div class="profile-popup-identity">
+
+                    <img
+                        src="{% static 'images/default-avatar.png' %}"
+                        class="popup-avatar"
+                    >
+
+                    <h5>{{ request.user.get_full_name }}</h5>
+                    <small>{{ request.user.email }}</small>
+                    <div class="profile-role-chip">{{ request.user.role }}</div>
+
+                </div>
+
+                <div class="profile-popup-info">
+
+                    <div class="profile-info-row">
+                        <i class="bi bi-person-vcard"></i>
+                        <span><strong>Employee No:</strong> {{ request.user.employee_number }}</span>
+                    </div>
+
+                </div>
+
+                <div class="profile-popup-menu">
+
+                    <a href="{% url 'technician_profile' %}">
+                        <i class="bi bi-person-fill"></i>
+                        My Profile
+                    </a>
+
+                    <a href="#">
+                        <i class="bi bi-gear-fill"></i>
+                        Account Settings
+                    </a>
+
+                    <a href="#">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        Change Password
+                    </a>
+
+                    <a href="#" data-pwa-install hidden>
+                        <i class="bi bi-download"></i>
+                        Install app
+                    </a>
+
+                    <div class="profile-popup-divider"></div>
+
+                    <a href="{% url 'logout' %}" class="menu-item-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+
+
+                    </a>
+
+                </div>
+
+    </div>
+
+</div>
     </div>
 </header>
 
@@ -438,14 +517,6 @@
             </li>
 
             <li>
-                <a href="{% url 'technician_tasks' %}" class="{% block nav_it_tasks %}{% endblock %}">
-                    <i class="bi bi-clipboard-check-fill"></i>
-                    <span>IT Task</span>
-                    {% if it_tasks_open_count %}<span class="nav-badge">{{ it_tasks_open_count }}</span>{% endif %}
-                </a>
-            </li>
-
-            <li>
                 <a href="{% url 'manage_articles' %}" class="{% block nav_kb %}{% endblock %}">
                     <i class="bi bi-book-half"></i>
                     <span>Knowledge Base</span>
@@ -479,6 +550,7 @@
 
     <!-- Main -->
     <main class="main-content">
+        {% include 'includes/messages.html' %}
         {% block content %}
         {% endblock %}
     </main>

@@ -39,8 +39,8 @@ IT Tasks
                 {% if task.due_date %} &middot; due {{ task.due_date }}{% endif %}
             </div>
         </div>
-        <span class="priority-badge {{ task.priority }}">{{ task.get_priority_display }}</span>
-        <span class="status-badge {{ task.status }}">{{ task.get_status_display }}</span>
+        <span class="priority-badge {{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+        <span class="status-badge {{ task.status|lower|slugify }}">{{ task.get_status_display }}</span>
         <div class="queue-actions">
             <a href="{% url 'admin_task_edit' task.pk %}" class="btn btn-sm btn-light">
                 <i class="bi bi-pencil-fill"></i>

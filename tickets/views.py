@@ -360,6 +360,9 @@ def article_detail(request, pk):
 
 @login_required
 def all_tickets(request):
+    from .admin_views import is_admin, admin_all_tickets_context
+    if is_admin(request.user):
+        return render(request, "tickets/admin_all_tickets.html", admin_all_tickets_context(request))
     tickets = Ticket.objects.all().order_by("-created_at")
 
     q = request.GET.get("q")
@@ -403,6 +406,9 @@ def my_queue(request):
 
 @login_required
 def unassigned_queue(request):
+    from .admin_views import is_admin, admin_unassigned_context
+    if is_admin(request.user):
+        return render(request, "tickets/admin_unassigned_queue.html", admin_unassigned_context(request))
 
     tickets = Ticket.objects.filter(
         assigned_to__isnull=True
@@ -464,22 +470,32 @@ def technician_profile(request):
 
 @login_required
 def claim_ticket(request, pk):
+    from .admin_views import is_technician
 
-    ticket = get_object_or_404(
-        Ticket,
-        pk=pk,
+    ticket = get_object_or_404(Ticket, pk=pk)
+
+    if not is_technician(request.user):
+        messages.error(request, "Only technicians can claim tickets.")
+        return redirect("technician_ticket_detail", pk=ticket.pk) if request.user.is_staff or str(getattr(request.user, "role", "")).upper() == "ADMIN" else redirect("dashboard")
+
+    if request.method != "POST":
+        return redirect("technician_ticket_detail", pk=ticket.pk)
+
+    # One atomic UPDATE: if two technicians click at once, only one row changes.
+    finished = [TicketStatus.RESOLVED, TicketStatus.CLOSED]
+    claimed = Ticket.objects.filter(pk=ticket.pk, assigned_to__isnull=True).update(
+        assigned_to=request.user,
+        updated_at=timezone.now(),
     )
 
-    if ticket.assigned_to is None:
+    if claimed:
+        ticket.refresh_from_db()
+        if ticket.status not in finished and ticket.status != TicketStatus.IN_PROGRESS:
+            ticket.status = TicketStatus.IN_PROGRESS
+            ticket.save()
 
-        ticket.assigned_to = request.user
-        ticket.status = TicketStatus.IN_PROGRESS
-        ticket.save()
-
-        messages.success(
-            request,
-            "Ticket claimed successfully."
-        )
+        who = request.user.get_full_name() or request.user.username
+        messages.success(request, f"You claimed Ticket #{ticket.id}. It is now in your queue.")
 
         create_notification(
             request.user,
@@ -487,105 +503,112 @@ def claim_ticket(request, pk):
             ticket=ticket,
             audience="technician",
         )
-
         create_notification(
             ticket.created_by,
-            f"Ticket #{ticket.id} was claimed by {request.user.get_full_name() or request.user.username}.",
+            f"Ticket #{ticket.id} was claimed by {who}.",
             ticket=ticket,
             audience="employee",
         )
-
     else:
+        ticket.refresh_from_db()
+        owner = ticket.assigned_to
+        name = (owner.get_full_name() or owner.username) if owner else "someone else"
+        messages.warning(request, f"Ticket #{ticket.id} was already claimed by {name}.")
 
-        messages.warning(
-            request,
-            "Ticket has already been assigned."
-        )
-
-    return redirect(
-        "technician_ticket_detail",
-        pk=ticket.pk,
-    )
+    return redirect("technician_ticket_detail", pk=ticket.pk)
 
 
 @login_required
 def update_ticket_status(request, pk):
+    from .admin_views import is_admin, is_technician
 
-    ticket = get_object_or_404(
-        Ticket,
-        pk=pk
-    )
+    if not (is_admin(request.user) or is_technician(request.user)):
+        messages.error(request, "You don't have permission to update tickets.")
+        return redirect("dashboard")
 
-    if request.method == "POST":
+    ticket = get_object_or_404(Ticket, pk=pk)
 
-        new_status = request.POST.get("status")
-        resolution = request.POST.get("resolution")
+    if request.method != "POST":
+        return redirect("technician_ticket_detail", pk=ticket.pk)
 
+    new_status = request.POST.get("status")
+    resolution = (request.POST.get("resolution") or "").strip()
+
+    if new_status not in TicketStatus.values:
+        messages.error(request, "Please choose a valid status.")
+        return redirect("technician_ticket_detail", pk=ticket.pk)
+
+    if new_status == TicketStatus.RESOLVED and not (resolution or ticket.resolution):
+        messages.error(request, "Please describe how the issue was resolved.")
+        return redirect("technician_ticket_detail", pk=ticket.pk)
+
+    old_status = ticket.status
+    changed = new_status != old_status
+    new_resolution = bool(resolution) and resolution != ticket.resolution
+
+    if not changed and not new_resolution:
+        messages.info(request, "Nothing to update.")
+        return redirect("technician_ticket_detail", pk=ticket.pk)
+
+    # Updating an unclaimed ticket claims it for the technician doing the work
+    claimed = False
+    if ticket.assigned_to is None and is_technician(request.user):
+        ticket.assigned_to = request.user
+        claimed = True
+
+    if resolution:
+        ticket.resolution = resolution
+
+    if changed:
         if new_status == TicketStatus.RESOLVED:
-
-            if not resolution:
-                messages.error(
-                    request,
-                    "Please enter a resolution."
-                )
-                return redirect(
-                    "technician_ticket_detail",
-                    pk=ticket.pk
-                )
-
-            ticket.resolution = resolution
             ticket.resolved_at = timezone.now()
-
+            ticket.closed_at = None
         elif new_status == TicketStatus.CLOSED:
             ticket.closed_at = timezone.now()
-
+            if ticket.resolved_at is None:
+                ticket.resolved_at = ticket.closed_at
+        else:
+            # Re-opened or still being worked: it is no longer finished
+            ticket.resolved_at = None
+            ticket.closed_at = None
         ticket.status = new_status
-        ticket.save()
 
-        messages.success(
-            request,
-            "Ticket updated."
-        )
+    ticket.save()
 
-        # Let the technician who made the change see it in their own bell
+    messages.success(request, f"Ticket updated to {ticket.status}." if changed else "Resolution notes saved.")
+
+    who = request.user.get_full_name() or request.user.username
+    if changed:
         create_notification(
             request.user,
             f"You updated Ticket #{ticket.id} to {new_status}.",
             ticket=ticket,
             audience="technician",
         )
-
-        # Notify the employee who filed it, worded to match the actual new status
         if new_status == TicketStatus.RESOLVED:
-            create_notification(
-                ticket.created_by,
-                f"Ticket #{ticket.id} was resolved. Let us know how we did!",
-                ticket=ticket,
-                audience="employee",
-            )
+            text = f"Ticket #{ticket.id} was resolved. Let us know how we did!"
         elif new_status == TicketStatus.CLOSED:
-            create_notification(
-                ticket.created_by,
-                f"Ticket #{ticket.id} has been closed.",
-                ticket=ticket,
-                audience="employee",
-            )
+            text = f"Ticket #{ticket.id} has been closed."
         else:
-            create_notification(
-                ticket.created_by,
-                f"Ticket #{ticket.id} status changed to {new_status}.",
-                ticket=ticket,
-                audience="employee",
-            )
+            text = f"Ticket #{ticket.id} status changed to {new_status}."
+        create_notification(ticket.created_by, text, ticket=ticket, audience="employee")
+    if claimed:
+        create_notification(
+            ticket.created_by,
+            f"Ticket #{ticket.id} was claimed by {who}.",
+            ticket=ticket,
+            audience="employee",
+        )
 
-    return redirect(
-        "technician_ticket_detail",
-        pk=ticket.pk
-    )
+    return redirect("technician_ticket_detail", pk=ticket.pk)
 
 
 @login_required
 def technician_ticket_detail(request, pk):
+    from .admin_views import is_admin, is_technician
+    if not (is_admin(request.user) or is_technician(request.user)):
+        messages.error(request, "You don't have permission to view that page.")
+        return redirect("dashboard")
 
     ticket = get_object_or_404(
         Ticket,
@@ -643,6 +666,7 @@ def technician_ticket_detail(request, pk):
             "comments": public_comments,
             "internal_comments": internal_comments,
             "comment_form": comment_form,
+            "status_choices": TicketStatus.choices,
         },
     )
 

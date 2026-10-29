@@ -1,0 +1,7 @@
+{% if messages %}
+<div class="flash-messages" role="status" aria-live="polite">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} mb-3">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
